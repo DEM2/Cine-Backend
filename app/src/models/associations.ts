@@ -11,6 +11,7 @@
 
 import Country from "./country.model";
 import Department from "./department.model";
+import City from "./city.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -22,4 +23,14 @@ Country.hasMany(Department, { foreignKey: "countryId", as: "departments" });
  */
 Department.belongsTo(Country, { foreignKey: "countryId", as: "country" });
 
-export { Country, Department };
+/**
+ * Un departamento tiene muchas ciudades (relación uno a muchos).
+ */
+Department.hasMany(City, { foreignKey: "departmentId", as: "cities" });
+
+/**
+ * Una ciudad pertenece a un único departamento (relación muchos a uno).
+ */
+City.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
+
+export { Country, Department, City };
