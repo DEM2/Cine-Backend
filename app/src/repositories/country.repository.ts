@@ -23,6 +23,15 @@ class CountryRepository implements ICountryRepository {
 
     }
 
+    /**
+     * Obtiene un país por su identificador.
+     */
+    async findById(id: number): Promise<Country | null> {
+
+        return await Country.findByPk(id);
+
+    }
+
 }
 
 export default new CountryRepository();
