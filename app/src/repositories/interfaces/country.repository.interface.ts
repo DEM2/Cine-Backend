@@ -17,4 +17,11 @@ export interface ICountryRepository {
      */
     findAll(): Promise<Country[]>;
 
+    /**
+     * Obtiene un país por su identificador.
+     *
+     * @param id - Identificador del país.
+     */
+    findById(id: number): Promise<Country | null>;
+
 }
