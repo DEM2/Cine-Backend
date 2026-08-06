@@ -24,6 +24,14 @@ class DepartmentRepository implements IDepartmentRepository {
         });
 
     }
+    /**
+     * Obtiene un departamento por su identificador.
+     */
+    async findById(id: number): Promise<Department | null> {
+
+        return await Department.findByPk(id);
+
+    }
 
 }
 
