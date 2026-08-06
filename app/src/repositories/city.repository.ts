@@ -1,0 +1,18 @@
+// app/src/repositories/city.repository.ts
+
+import City from "../models/city.model";
+import { ICityRepository } from "./interfaces/city.repository.interface";
+
+class CityRepository implements ICityRepository {
+
+    async findByDepartmentId(departmentId: number): Promise<City[]> {
+
+        return await City.findAll({
+            where: { departmentId }
+        });
+
+    }
+
+}
+
+export default new CityRepository();

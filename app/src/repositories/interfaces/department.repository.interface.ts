@@ -19,4 +19,11 @@ export interface IDepartmentRepository {
      */
     findByCountryId(countryId: number): Promise<Department[]>;
 
+    /**
+     * Obtiene un departamento por su identificador.
+     *
+     * @param id - Identificador del departamento.
+     */
+    findById(id: number): Promise<Department | null>;
+
 }
