@@ -8,12 +8,14 @@
  * Endpoints disponibles:
  *  - `POST /api/movies/` : Crear una nueva movie.
  *  - `GET /api/movies/`  : Obtener todas las movies.
+ *  - `GET /api/movies/:id` : Obtener el detalle de una movie.
+ *  - `GET /api/movies/:id/functions` : Obtener funciones futuras de una movie.
  *
  * Cada ruta se conecta con su respectivo controlador.
  */
 
 import { Router } from "express";
-import { createMovie, getMovies } from "../controllers/movie.controller";
+import { createMovie, getMovies, getMovieById, getMovieFunctions } from "../controllers/movie.controller";
 
 const router = Router();
 
@@ -150,6 +152,119 @@ router.post("/", createMovie);
  */
 router.get("/", getMovies);
 
+/**
+ * GET /api/movies/{id}
+ * --------------------
+ * Obtiene el detalle completo de una película por su identificador.
+ *
+ * Response:
+ *  - 200 OK: Retorna el detalle de la película en formato JSON.
+ *  - 404 Not Found: La película no existe.
+ *  - 500 Internal Server Error: Error inesperado durante la consulta.
+ *
+ * @swagger
+ * /api/movies/{id}:
+ *   get:
+ *     summary: Obtener el detalle de una película
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Identificador de la película
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Detalle de la película obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               id: 1
+ *               title: "Inception"
+ *               original_title: "Inception"
+ *               synopsis: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
+ *               director: "Christopher Nolan"
+ *               duration_minutes: 148
+ *               genre: "Ciencia ficción"
+ *               rating: "PG-13"
+ *               language: "Inglés"
+ *               dubbed: true
+ *               subtitled: true
+ *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
+ *               premiere: false
+ *               audience_rating: 4.8
+ *       404:
+ *         description: La película no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Película no encontrada"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Error al obtener el detalle de la película"
+ */
+router.get("/:id", getMovieById);
+
+/**
+ * GET /api/movies/{id}/functions
+ * ------------------------------
+ * Obtiene las funciones futuras disponibles de una película.
+ *
+ * Response:
+ *  - 200 OK: Lista de funciones futuras.
+ *  - 404 Not Found: La película no existe.
+ *  - 500 Internal Server Error: Error inesperado.
+ *
+ * @swagger
+ * /api/movies/{id}/functions:
+ *   get:
+ *     summary: Obtener funciones futuras de una película
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Identificador de la película
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de funciones futuras obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 10
+ *                 startsAt: "2026-08-12T18:30:00.000Z"
+ *                 format: "IMAX"
+ *                 price: 35000
+ *                 isSoldOut: false
+ *                 availableSeats: 42
+ *               - id: 11
+ *                 startsAt: "2026-08-12T21:00:00.000Z"
+ *                 format: "2D"
+ *                 price: 18000
+ *                 isSoldOut: true
+ *                 availableSeats: 0
+ *       404:
+ *         description: La película no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Película no encontrada"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Error al obtener las funciones de la película"
+ */
+router.get("/:id/functions", getMovieFunctions);
 
 export default router;
 

@@ -36,6 +36,16 @@ class MovieService implements ImovieService {
     async findAll(): Promise<Movie[]> {
         return await repository.findAll();
     }
+
+    async findById(id: number): Promise<Movie | null> {
+        const movie = await repository.findById(id);
+
+        if (!movie) {
+            throw new AppError(404, "La película no encontrada.");
+        }
+
+        return movie;
+    }
 }
 
 export default new MovieService();
