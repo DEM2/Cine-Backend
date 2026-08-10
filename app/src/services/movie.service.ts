@@ -5,7 +5,7 @@ import repository from "../repositories/movie.repository";
 import AppError from "../error/appError";
 import Movie from "../models/movie.model";
 
-import {ImovieService } from "../services/interfaces/movie.service.interface"
+import {IMovieService } from "../services/interfaces/movie.service.interface"
 
 /**
  * Servicio de Movie
@@ -18,7 +18,7 @@ import {ImovieService } from "../services/interfaces/movie.service.interface"
  *  - Mantener al controlador libre de lógica de negocio.
  */
 
-class MovieService implements ImovieService {
+class MovieService implements IMovieService {
 
     async create(dto: CreateMovieDto): Promise<Movie> {
 
