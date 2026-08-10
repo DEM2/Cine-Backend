@@ -28,6 +28,10 @@ class MovieRepository implements IMovieRepository {
         return await Movie.findAll();
     }
 
+    async findById(id: number): Promise<Movie | null> {
+        return await Movie.findByPk(id);
+    }
+
     /**
      * Busca una película por su título.
      */
