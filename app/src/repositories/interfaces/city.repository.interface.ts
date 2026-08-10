@@ -11,4 +11,12 @@ export interface ICityRepository {
      */
     findByDepartmentId(departmentId: number): Promise<City[]>;
 
+
+    /**
+     * Obtiene una ciudad por su identificador.
+     *
+     * @param id - Identificador de la ciudad.
+     */
+    findById(id: number): Promise<City | null>;
+
 }

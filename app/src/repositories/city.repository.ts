@@ -13,6 +13,15 @@ class CityRepository implements ICityRepository {
 
     }
 
+     /**
+     * Obtiene una ciudad por su identificador.
+     */
+    async findById(id: number): Promise<City | null> {
+
+        return await City.findByPk(id);
+
+    }
+
 }
 
 export default new CityRepository();
