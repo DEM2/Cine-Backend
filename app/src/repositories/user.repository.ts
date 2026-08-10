@@ -31,6 +31,7 @@ class UserRepository implements IUserRepository {
         return await User.findAll();
 
     }
+    
      async findByEmail(email: string): Promise<User | null> {
       return await User.findOne({
         where: {

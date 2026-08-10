@@ -26,22 +26,33 @@
  * };
  */
 
+/*en la interface no agregamos roleId, status (los controla el sistema), failedLoginAttempts
+(empieza en 0), lockoutUntil (el usuario nunca decide cuando se bloque), createdAt, updatedAt (sequelize los crea) */
 export interface CreateUserDto {
 
-    /**
-     * Nombre completo del usuario.
-     */
-    name: string;
+    firstName: string;
 
-    /**
-     * Correo electrónico del usuario.
-     */
+    lastName: string;
+
     email: string;
 
-     /**
-     * contraseña del usuario.
-     */
     password: string;
+
+    documentTypeId: number;
+
+    documentNumber: string;
+
+    birthDate: Date;
+
+    gender: string;
+
+    phone: string;
+
+    address: string;
+
+    cityId: number;
+
+    favoriteComplexId: number;
 
 }
 
