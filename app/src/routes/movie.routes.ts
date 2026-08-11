@@ -213,17 +213,17 @@ router.get("/:id", getMovieById);
 /**
  * GET /api/movies/{id}/functions
  * ------------------------------
- * Obtiene las funciones futuras disponibles de una película.
+ * Obtiene las funciones disponibles de una película
  *
  * Response:
- *  - 200 OK: Lista de funciones futuras.
+ *  - 200 OK: Lista de funciones disponibles.
  *  - 404 Not Found: La película no existe.
  *  - 500 Internal Server Error: Error inesperado.
  *
  * @swagger
  * /api/movies/{id}/functions:
  *   get:
- *     summary: Obtener funciones futuras de una película
+ *     summary: Obtener funciones disponibles de una película
  *     tags: [Movies]
  *     parameters:
  *       - in: path
@@ -235,22 +235,34 @@ router.get("/:id", getMovieById);
  *           example: 1
  *     responses:
  *       200:
- *         description: Lista de funciones futuras obtenida exitosamente
+ *         description: Lista de funciones disponibles obtenida exitosamente
  *         content:
  *           application/json:
  *             example:
- *               - id: 10
- *                 startsAt: "2026-08-12T18:30:00.000Z"
- *                 format: "IMAX"
- *                 price: 35000
+ *               - id: "a1b2c3d4-e5f6-7890-abcd-ef1234567890"
+ *                 movieId: 1
+ *                 roomId: 1
+ *                 formatId: 1
+ *                 language: "Español"
+ *                 isSubtitled: false
+ *                 startTime: "2026-08-15T18:30:00.000Z"
+ *                 endTime: "2026-08-15T21:00:00.000Z"
+ *                 basePrice: 18000.00
+ *                 availableSeats: 80
+ *                 isActive: true
  *                 isSoldOut: false
- *                 availableSeats: 42
- *               - id: 11
- *                 startsAt: "2026-08-12T21:00:00.000Z"
- *                 format: "2D"
- *                 price: 18000
- *                 isSoldOut: true
+ *               - id: "b2c3d4e5-f6a7-8901-bcde-f12345678901"
+ *                 movieId: 1
+ *                 roomId: 1
+ *                 formatId: 3
+ *                 language: "Español"
+ *                 isSubtitled: false
+ *                 startTime: "2026-08-16T16:00:00.000Z"
+ *                 endTime: "2026-08-16T18:30:00.000Z"
+ *                 basePrice: 35000.00
  *                 availableSeats: 0
+ *                 isActive: true
+ *                 isSoldOut: true
  *       404:
  *         description: La película no existe
  *         content:

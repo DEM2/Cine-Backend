@@ -12,6 +12,8 @@
 import Country from "./country.model";
 import Department from "./department.model";
 import City from "./city.model";
+import Movie from "./movie.model";
+import Showtime from "./showtime.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -33,4 +35,14 @@ Department.hasMany(City, { foreignKey: "departmentId", as: "cities" });
  */
 City.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
 
-export { Country, Department, City };
+/**
+ * Un movie tiene muchos showtimes (relación uno a muchos).
+ */
+Movie.hasMany(Showtime, { foreignKey: "movieId", as: "showtimes" });
+
+/**
+ * Un showtime pertenece a un único movie (relación muchos a uno).
+ */
+Showtime.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+export { Country, Department, City, Movie, Showtime };

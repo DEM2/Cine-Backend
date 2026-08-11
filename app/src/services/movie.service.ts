@@ -5,7 +5,8 @@ import repository from "../repositories/movie.repository";
 import AppError from "../error/appError";
 import Movie from "../models/movie.model";
 
-import {ImovieService } from "../services/interfaces/movie.service.interface"
+import { IMovieService } from "../services/interfaces/movie.service.interface"
+import Showtime from "../models/showtime.model";
 
 /**
  * Servicio de Movie
@@ -18,7 +19,7 @@ import {ImovieService } from "../services/interfaces/movie.service.interface"
  *  - Mantener al controlador libre de lógica de negocio.
  */
 
-class MovieService implements ImovieService {
+class MovieService implements IMovieService {
 
     async create(dto: CreateMovieDto): Promise<Movie> {
 
@@ -45,6 +46,15 @@ class MovieService implements ImovieService {
         }
 
         return movie;
+    }
+
+    async findFunctions(movieId: number): Promise<Showtime[]> {
+        await this.findById(movieId);
+        const showtimes = await repository.findFunctionsByMovieId(movieId);
+        if (!showtimes) {
+            throw new AppError(404, "No se encontraron funciones para la película.");
+        }
+        return showtimes;
     }
 }
 

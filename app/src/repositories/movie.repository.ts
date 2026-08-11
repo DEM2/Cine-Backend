@@ -1,6 +1,7 @@
 // app/src/repositories/movie.repository.ts
 
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
+import Showtime from "../models/showtime.model";
 import { IMovieRepository } from "./interfaces/movie.repository.interface";
 
 /**
@@ -37,6 +38,10 @@ class MovieRepository implements IMovieRepository {
      */
     async findByTitle(title: string): Promise<Movie | null> {
         return await Movie.findOne({ where: { title } });
+    }
+
+    async findFunctionsByMovieId(movieId: number): Promise<Showtime[]> {
+        return await Showtime.findAll({ where: { movieId } });
     }
 
 }
