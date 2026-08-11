@@ -1,7 +1,10 @@
 // app/src/repositories/movie.repository.ts
 
+import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
 import { IMovieRepository } from "./interfaces/movie.repository.interface";
+import Showtime from "../models/showtime.model";
+
 
 /**
  * Repositorio de Películas
@@ -13,6 +16,15 @@ import { IMovieRepository } from "./interfaces/movie.repository.interface";
  */
 
 class MovieRepository implements IMovieRepository {
+    findToday(date: string): Promise<Movie[]> {
+        throw new Error("Method not implemented.");
+    }
+    findWeekly(startDate: string, endDate: string): Promise<Movie[]> {
+        throw new Error("Method not implemented.");
+    }
+    findFiltered(filters: MovieFilterDto): Promise<Movie[]> {
+        throw new Error("Method not implemented.");
+    }
 
     /**
      * Crea una nueva película.
@@ -21,13 +33,22 @@ class MovieRepository implements IMovieRepository {
         return await Movie.create(data);
     }
 
-    /**
-     * Obtiene todas las películas.
-     */
-    async findAll(): Promise<Movie[]> {
-        return await Movie.findAll();
-    }
-
+/**
+ * Obtiene todas las películas.
+ */
+async findAll(): Promise<Movie[]> {
+    return await Movie.findAll({
+        subQuery: false,
+        include: [
+            {
+                model: Showtime,
+                as: "showtimes",
+                where: { isActive: true },
+                required: true,
+            }
+        ]
+    });
+}
     /**
      * Busca una película por su título.
      */

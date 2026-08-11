@@ -1,11 +1,11 @@
 // app/src/services/movie.service.ts
 
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
+import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import repository from "../repositories/movie.repository";
 import AppError from "../error/appError";
 import Movie from "../models/movie.model";
-
-import {ImovieService } from "../services/interfaces/movie.service.interface"
+import { IMovieService } from "../services/interfaces/movie.service.interface";
 
 /**
  * Servicio de Movie
@@ -18,7 +18,13 @@ import {ImovieService } from "../services/interfaces/movie.service.interface"
  *  - Mantener al controlador libre de lógica de negocio.
  */
 
-class MovieService implements ImovieService {
+/**
+ * Formatea una fecha como YYYY-MM-DD usando la zona horaria local.
+ */
+const formatISODate = (date: Date): string =>
+    `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
+
+class MovieService implements IMovieService {
 
     async create(dto: CreateMovieDto): Promise<Movie> {
 
@@ -35,6 +41,22 @@ class MovieService implements ImovieService {
 
     async findAll(): Promise<Movie[]> {
         return await repository.findAll();
+    }
+
+    async getToday(): Promise<Movie[]> {
+        return await repository.findToday(formatISODate(new Date()));
+    }
+
+    async getWeekly(): Promise<Movie[]> {
+        const today = new Date();
+        const endDate = new Date(today);
+        endDate.setDate(endDate.getDate() + 7);
+
+        return await repository.findWeekly(formatISODate(today), formatISODate(endDate));
+    }
+
+    async getFiltered(filters: MovieFilterDto): Promise<Movie[]> {
+        return await repository.findFiltered(filters);
     }
 }
 
