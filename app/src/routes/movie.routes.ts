@@ -13,7 +13,7 @@
  */
 
 import { Router } from "express";
-import { createMovie, getMovies } from "../controllers/movie.controller";
+import { createMovie, getMovies, getMoviesToday, getMoviesWeekly, getMoviesByFilters } from "../controllers/movie.controller";
 
 const router = Router();
 
@@ -148,6 +148,98 @@ router.post("/", createMovie);
  *             example:
  *               error: "Error retrieving the movies"
  */
+/**
+ * GET /api/movies/today
+ * ---------------------
+ * Obtiene las películas con funciones activas para la fecha de hoy.
+ *
+ * Response:
+ *  - 200 OK: Retorna un arreglo de películas (con sus showtimes) en formato JSON.
+ *
+ * @swagger
+ * /api/movies/today:
+ *   get:
+ *     summary: Get movies with active showtimes today
+ *     tags: [Movies]
+ *     responses:
+ *       200:
+ *         description: Today's movie list obtained successfully
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/today", getMoviesToday);
+
+/**
+ * GET /api/movies/weekly
+ * ----------------------
+ * Obtiene las películas con funciones activas en los próximos 7 días.
+ *
+ * Response:
+ *  - 200 OK: Retorna un arreglo de películas (con sus showtimes) en formato JSON.
+ *
+ * @swagger
+ * /api/movies/weekly:
+ *   get:
+ *     summary: Get movies with active showtimes in the next 7 days
+ *     tags: [Movies]
+ *     responses:
+ *       200:
+ *         description: Weekly movie list obtained successfully
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/weekly", getMoviesWeekly);
+
+/**
+ * GET /api/movies/filtres
+ * -----------------------
+ * Obtiene las películas aplicando filtros combinados por query params.
+ *
+ * Parámetros (todos opcionales):
+ *  - `title`, `genre`, `rating`, `language`, `premiere` (filtros de película).
+ *  - `date` (YYYY-MM-DD), `formatId`, `complex`, `available` (filtros de función).
+ *
+ * @swagger
+ * /api/movies/filtres:
+ *   get:
+ *     summary: Get movies applying combined filters
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: query
+ *         name: title
+ *         schema: { type: string }
+ *       - in: query
+ *         name: genre
+ *         schema: { type: string }
+ *       - in: query
+ *         name: rating
+ *         schema: { type: string }
+ *       - in: query
+ *         name: language
+ *         schema: { type: string }
+ *       - in: query
+ *         name: premiere
+ *         schema: { type: boolean }
+ *       - in: query
+ *         name: date
+ *         schema: { type: string, format: date }
+ *       - in: query
+ *         name: formatId
+ *         schema: { type: integer }
+ *       - in: query
+ *         name: complex
+ *         schema: { type: string }
+ *       - in: query
+ *         name: available
+ *         schema: { type: boolean }
+ *     responses:
+ *       200:
+ *         description: Filtered movie list obtained successfully
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/filtres", getMoviesByFilters);
+
 router.get("/", getMovies);
 
 
