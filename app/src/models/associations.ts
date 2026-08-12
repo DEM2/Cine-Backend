@@ -9,9 +9,9 @@
  * las columnas de clave foránea y sus restricciones se creen automáticamente.
  */
 
-import Country from "./country.model";
-import Department from "./department.model";
-import City from "./city.model";
+import Country from "./geo_locations/country.model";
+import Department from "./geo_locations/department.model";
+import City from "./geo_locations/city.model";
 import Role from "./role.model";
 import DocumentType from "./document-type.model";
 import User from "./user.model";
