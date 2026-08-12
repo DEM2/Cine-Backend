@@ -1,7 +1,7 @@
-import { QueryInterface, Sequelize } from "sequelize";
+import { QueryInterface } from "sequelize";
 
 export default {
-  async up (queryInterface: QueryInterface, sequelize: Sequelize) {
+  async up(queryInterface: QueryInterface) {
     await queryInterface.bulkInsert('roles', [
       {
         id: 1,
@@ -21,10 +21,13 @@ export default {
         createdAt: new Date(),
         updatedAt: new Date(),
       }
-  ], {});
+    ],
+      {
+        ignoreDuplicates: true
+      } as any);
   },
 
-  async down (queryInterface: QueryInterface, sequelize: Sequelize) {
-     await queryInterface.bulkDelete('roles', { id: [1, 2, 3] }, {});
+  async down(queryInterface: QueryInterface) {
+    await queryInterface.bulkDelete('roles', { id: [1, 2, 3] }, {});
   }
 };

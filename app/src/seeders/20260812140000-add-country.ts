@@ -1,18 +1,20 @@
-import { QueryInterface, Sequelize } from "sequelize";
+import { QueryInterface } from "sequelize";
 
 export default {
-  async up (queryInterface: QueryInterface, sequelize: Sequelize) {
+  async up(queryInterface: QueryInterface) {
     await queryInterface.bulkInsert('countries', [
       {
-        id:1,
+        id: 1,
         name: 'Colombia',
         createdAt: new Date(),
         updatedAt: new Date(),
       }
-  ], {});
+    ], {
+      ignoreDuplicates: true
+    } as any); 
   },
 
-  async down (queryInterface: QueryInterface, sequelize: Sequelize) {
-     await queryInterface.bulkDelete('countries', {name:'Colombia'}, {});
+  async down(queryInterface: QueryInterface) {
+    await queryInterface.bulkDelete('countries', { id: 1 }, {});
   }
 };
