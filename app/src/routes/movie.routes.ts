@@ -117,38 +117,6 @@ const router = Router();
 router.post("/", createMovie);
 
 /**
- * GET /api/movies
- * ---------------
- * Obtiene la lista completa de películas registradas en la base de datos.
- * 
- * Response:
- *  - 200 OK: Retorna un arreglo de películas en formato JSON.
- * 
- * @swagger
- * /api/movies:
- *   get:
- *     summary: Get all movies
- *     tags: [Movies]
- *     responses:
- *       200:
- *         description: Movie list obtained successfully
- *         content:
- *           application/json:
- *             example:
- *               - id: 1
- *                 title: "Inception"
- *                 director: "Christopher Nolan"
- *               - id: 2
- *                 title: "Interstellar"
- *                 director: "Christopher Nolan"
- *       500:
- *         description: Internal server error
- *         content:
- *           application/json:
- *             example:
- *               error: "Error retrieving the movies"
- */
-/**
  * GET /api/movies/today
  * ---------------------
  * Obtiene las películas con funciones activas para la fecha de hoy.
@@ -240,9 +208,42 @@ router.get("/weekly", getMoviesWeekly);
  */
 router.get("/filtres", getMoviesByFilters);
 
+/**
+ * GET /api/movies
+ * ---------------
+ * Obtiene la lista completa de películas registradas en la base de datos.
+ * 
+ * Response:
+ *  - 200 OK: Retorna un arreglo de películas en formato JSON.
+ * 
+ * @swagger
+ * /api/movies:
+ *   get:
+ *     summary: Get all movies
+ *     tags: [Movies]
+ *     responses:
+ *       200:
+ *         description: Movie list obtained successfully
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 1
+ *                 title: "Inception"
+ *                 director: "Christopher Nolan"
+ *               - id: 2
+ *                 title: "Interstellar"
+ *                 director: "Christopher Nolan"
+ *       500:
+ *         description: Internal server error
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Error retrieving the movies"
+ */
 router.get("/", getMovies);
 
 
 export default router;
 
 
+// aca esta la ruta para crear una pelicula, obtener todas las peliculas, obtener peliculas de hoy, obtener peliculas de la semana y obtener peliculas filtradas por query params.

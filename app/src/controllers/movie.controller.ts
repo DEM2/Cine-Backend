@@ -1,6 +1,5 @@
 
 import { Request, Response } from "express";
-
 import movieService from "../services/movie.service";
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
