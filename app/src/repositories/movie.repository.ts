@@ -45,10 +45,10 @@ class MovieRepository implements IMovieRepository {
         return await Showtime.findAll({ where: { movieId } });
     }
 
-    async findRecommendedMovies(id: number, genreIds: number[]): Promise<Movie[]> {
+    async findRecommendedMovies(id: number, genre: string): Promise<Movie[]> {
         return await Movie.findAll({
             where: {
-                genreId: { [Op.in]: genreIds },
+                genre,
                 id: { [Op.ne]: id },
             }
         });
