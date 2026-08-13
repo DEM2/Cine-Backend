@@ -13,6 +13,7 @@
  */
 
 import { DataTypes, Model, Optional } from "sequelize";
+import bcrypt from 'bcrypt';
 import sequelize from "../config/database";
 
 /**
@@ -32,6 +33,9 @@ export interface UserAttributes {
   address: string;
   cityId: number;
   roleId: number;
+  failed_login_attempts: number;
+  lockout_until: Date | null;
+  isVerified: boolean;
 }
 
 /**
@@ -80,6 +84,10 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
 
   /** Dirección de residencia del usuario. */
   public address!: string;
+  // Campos requeridos para la HU-007
+  public isVerified!: boolean;
+  public failed_login_attempts!: number;
+  public lockout_until!: Date | null;
 
   /** Identificador de la ciudad de residencia del usuario (clave foránea). */
   public cityId!: number;
@@ -90,6 +98,10 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
    * el rol "Natural" (ver `UserService.create`).
    */
   public roleId!: number;
+  // Método para validar la contraseña
+  public async validPassword(password: string): Promise<boolean> {
+    return await bcrypt.compare(password, this.password);
+  }
 }
 
 /**
@@ -166,6 +178,19 @@ User.init(
       type: DataTypes.STRING(150),
       allowNull: false,
     },
+  // Campos requeridos para la HU-007
+    isVerified: { 
+      type: DataTypes.BOOLEAN,
+      defaultValue: false 
+    }, // RN-031
+    failed_login_attempts: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0 
+    }, // RN-027
+     lockout_until: {
+      type: DataTypes.DATE,
+       allowNull: true 
+    },
     cityId: {
       type: DataTypes.INTEGER,
       allowNull: false,
@@ -190,6 +215,13 @@ User.init(
     modelName: "User",      // Nombre del modelo en Sequelize
     tableName: "users",     // Nombre de la tabla en la base de datos
     timestamps: true,       // Incluye createdAt y updatedAt
+    hooks: {
+    // Hashear la contraseña automáticamente antes de guardarla
+    beforeCreate: async (user: User) => {
+      const salt = await bcrypt.genSalt(10);
+      user.password = await bcrypt.hash(user.password, salt);
+    }
+  }  
   }
 );
 

@@ -63,15 +63,15 @@ class UserService implements IUserService {
         // registrado a través de este servicio recibe este rol por defecto.
         const role = await roleRepository.findOrCreateByName(DEFAULT_ROLE_NAME);
 
-        // Encriptar contraseña
-        const hashedPassword = await bcrypt.hash(dto.password, 10);
+        // Linea eliminada, ya no necesitamos esta forma de encriptar la contraseña
+        //const hashedPassword = await bcrypt.hash(dto.password, 10);
 
         // Persiste el usuario, mapeando el DTO (snake_case, tal como llega
         // del cliente) a los atributos del modelo (camelCase) y asignando
         // el rol "MIEMBRO" por defecto.
         const user = await repository.create({
             email: dto.email,
-            password: hashedPassword,
+            password: dto.password,
             documentTypeId: dto.document_type_id,
             documentNumber: dto.document_number,
             firstName: dto.first_name,
@@ -82,6 +82,9 @@ class UserService implements IUserService {
             address: dto.address,
             cityId: dto.city_id,
             roleId: role.id,
+            isVerified: false,
+            failed_login_attempts: 0,
+            lockout_until: null
         });
 
        return  this.toResponseDto(user, role.name);  
