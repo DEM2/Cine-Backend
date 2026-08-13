@@ -1,6 +1,6 @@
 // app/src/repositories/department.repository.ts
 
-import Department from "../models/department.model";
+import Department from "../models/geo_locations/department.model";
 import { IDepartmentRepository } from "./interfaces/department.repository.interface";
 
 /**
