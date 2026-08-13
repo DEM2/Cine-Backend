@@ -265,3 +265,20 @@ export const getMovieFunctions = async (_req: Request, res: Response): Promise<R
     }
 };
 
+export const getRecommendedMovies = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const movieId = Number(_req.params.id)
+        const recommendedMovies = await movieService.findRecommendedMovies(movieId);
+        return res.status(200).json(recommendedMovies);
+    } catch (error: any) {
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+};
+

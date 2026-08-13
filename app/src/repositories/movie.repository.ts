@@ -1,5 +1,6 @@
 // app/src/repositories/movie.repository.ts
 
+import { Op } from "sequelize";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
 import Showtime from "../models/showtime.model";
 import { IMovieRepository } from "./interfaces/movie.repository.interface";
@@ -44,6 +45,14 @@ class MovieRepository implements IMovieRepository {
         return await Showtime.findAll({ where: { movieId } });
     }
 
+    async findRecommendedMovies(id: number, genreIds: number[]): Promise<Movie[]> {
+        return await Movie.findAll({
+            where: {
+                genreId: { [Op.in]: genreIds },
+                id: { [Op.ne]: id },
+            }
+        });
+    }
 }
 
 export default new MovieRepository();

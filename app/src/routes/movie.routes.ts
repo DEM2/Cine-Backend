@@ -15,7 +15,7 @@
  */
 
 import { Router } from "express";
-import { createMovie, getMovies, getMovieById, getMovieFunctions } from "../controllers/movie.controller";
+import { createMovie, getMovies, getMovieById, getMovieFunctions, getRecommendedMovies } from "../controllers/movie.controller";
 
 const router = Router();
 
@@ -277,6 +277,79 @@ router.get("/:id", getMovieById);
  *               error: "Error al obtener las funciones de la película"
  */
 router.get("/:id/functions", getMovieFunctions);
+
+
+/**
+ * GET /api/movies/{id}/recommendations
+ * ------------------------------------
+ * Obtiene películas recomendadas (mismo género, excluyendo la película actual).
+ *
+ * Response:
+ *  - 200 OK: Lista de películas recomendadas (objeto movie completo).
+ *  - 404 Not Found: La película no existe.
+ *  - 500 Internal Server Error: Error inesperado.
+ *
+ * @swagger
+ * /api/movies/{id}/recommendations:
+ *   get:
+ *     summary: Obtener películas recomendadas para una película
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Identificador de la película
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de películas recomendadas obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 2
+ *                 title: "Interstellar"
+ *                 original_title: "Interstellar"
+ *                 synopsis: "Un grupo de exploradores viaja a través de un agujero de gusano en el espacio."
+ *                 director: "Christopher Nolan"
+ *                 duration_minutes: 169
+ *                 genre: "Ciencia ficción"
+ *                 rating: "PG-13"
+ *                 language: "Inglés"
+ *                 dubbed: true
+ *                 subtitled: true
+ *                 poster: "https://image.tmdb.org/t/p/original/interstellar.jpg"
+ *                 premiere: false
+ *                 audience_rating: 4.9
+ *               - id: 3
+ *                 title: "The Prestige"
+ *                 original_title: "The Prestige"
+ *                 synopsis: "Dos magos rivales se enfrentan en una competencia de ilusiones."
+ *                 director: "Christopher Nolan"
+ *                 duration_minutes: 130
+ *                 genre: "Ciencia ficción"
+ *                 rating: "PG-13"
+ *                 language: "Inglés"
+ *                 dubbed: false
+ *                 subtitled: true
+ *                 poster: "https://image.tmdb.org/t/p/original/prestige.jpg"
+ *                 premiere: false
+ *                 audience_rating: 4.7
+ *       404:
+ *         description: La película no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La película no encontrada."
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Error al obtener las películas recomendadas"
+ */
+router.get("/:id/recommendations", getRecommendedMovies);
 
 export default router;
 

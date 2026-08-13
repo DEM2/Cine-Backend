@@ -16,7 +16,7 @@ import sequelize from "../config/database";
  */
 
 export interface ShowtimeAttributes {
-  id: string;
+  id: number;
   movieId: number;
   roomId: number;
   formatId: number;
@@ -37,7 +37,7 @@ class Showtime
   extends Model<ShowtimeAttributes, ShowtimeCreationAttributes>
   implements ShowtimeAttributes
 {
-  public id!: string;
+  public id!: number;
   public movieId!: number;
   public roomId!: number;
   public formatId!: number;
@@ -121,6 +121,7 @@ Showtime.init(
     updatedAt: false,
     createdAt: "created_at",
   }
+  
 );
 
 export default Showtime;

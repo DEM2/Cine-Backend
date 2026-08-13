@@ -17,6 +17,7 @@ import Showtime from "../models/showtime.model";
  *  - Validar reglas de negocio.
  *  - Coordinar operaciones entre el controlador y el repositorio.
  *  - Mantener al controlador libre de lógica de negocio.
+ * 
  */
 
 class MovieService implements IMovieService {
@@ -38,7 +39,7 @@ class MovieService implements IMovieService {
         return await repository.findAll();
     }
 
-    async findById(id: number): Promise<Movie | null> {
+    async findById(id: number): Promise<Movie> {
         const movie = await repository.findById(id);
 
         if (!movie) {
@@ -55,6 +56,16 @@ class MovieService implements IMovieService {
             throw new AppError(404, "No se encontraron funciones para la película.");
         }
         return showtimes;
+    }
+
+    async findRecommendedMovies(id: number): Promise<Movie[]> {
+        const movie = await this.findById(id) ;
+
+        const recommendedMovies = await repository.findRecommendedMovies(movie.id, movie.genre);
+        if (!recommendedMovies) {
+            return [];
+        }
+        return recommendedMovies;
     }
 }
 
