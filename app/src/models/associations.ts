@@ -16,6 +16,7 @@ import Role from "./role.model";
 import DocumentType from "./document-type.model";
 import User from "./user.model";
 import Genre from "./genre.model";
+import Format from "./format.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -68,4 +69,4 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
-export { Country, Department, City, Role, DocumentType, User, Genre };
+export { Country, Department, City, Role, DocumentType, User, Genre, Format };
