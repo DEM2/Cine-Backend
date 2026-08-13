@@ -1,6 +1,6 @@
 // app/src/repositories/city.repository.ts
 
-import City from "../models/city.model";
+import City from "../models/geo_locations/city.model";
 import { ICityRepository } from "./interfaces/city.repository.interface";
 
 class CityRepository implements ICityRepository {
