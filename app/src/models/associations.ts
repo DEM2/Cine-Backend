@@ -15,6 +15,7 @@ import City from "./geo_locations/city.model";
 import Role from "./role.model";
 import DocumentType from "./document-type.model";
 import User from "./user.model";
+import Genre from "./genre.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -67,4 +68,4 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
-export { Country, Department, City, Role, DocumentType, User };
+export { Country, Department, City, Role, DocumentType, User, Genre };
