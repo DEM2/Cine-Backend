@@ -2,6 +2,7 @@
 
 import User from "../../models/user.model";
 import { CreateUserDto } from "../../dto/create-user.dto";
+import { UserResponseDto } from "../../dto/user-response.dto";
 
 /**
  * Contrato del Servicio de Usuarios.
@@ -9,7 +10,7 @@ import { CreateUserDto } from "../../dto/create-user.dto";
 
 export interface IUserService {
 
-    create(dto: CreateUserDto): Promise<User>;
+    create(dto: CreateUserDto): Promise<UserResponseDto>;
 
     findAll(): Promise<User[]>;
 

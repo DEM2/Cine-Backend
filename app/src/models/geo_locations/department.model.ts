@@ -13,7 +13,7 @@
  */
 
 import { DataTypes, Model, Optional } from "sequelize";
-import sequelize from "../config/database";
+import sequelize from "../../config/database";
 
 /**
  * Atributos principales de la entidad `Department`.

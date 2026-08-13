@@ -1,6 +1,6 @@
 // app/src/repositories/country.repository.ts
 
-import Country from "../models/country.model";
+import Country from "../models/geo_locations/country.model";
 import { ICountryRepository } from "./interfaces/country.repository.interface";
 
 /**

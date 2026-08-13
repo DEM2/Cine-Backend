@@ -1,6 +1,6 @@
 // app/src/repositories/interfaces/country.repository.interface.ts
 
-import Country from "../../models/country.model";
+import Country from "../../models/geo_locations/country.model";
 
 /**
  * Contrato del Repositorio de Países

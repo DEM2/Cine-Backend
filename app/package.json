@@ -5,6 +5,7 @@
   "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "db:seed": "npx sequelize-cli db:seed:all",
     "build": "tsc",
     "start": "node dist/index.js",
     "test": "jest --passWithNoTests"
@@ -12,6 +13,7 @@
   "dependencies": {
     "bcrypt": "^6.0.0",
     "cors": "^2.8.6",
+    "dotenv": "^17.4.2",
     "express": "^5.2.1",
     "pg": "^8.22.0",
     "sequelize": "^6.37.3",

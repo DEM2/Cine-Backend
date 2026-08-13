@@ -1,7 +1,7 @@
 // app/src/models/city.model.ts
 
 import { DataTypes, Model, Optional } from "sequelize";
-import sequelize from "../config/database";
+import sequelize from "../../config/database";
 
 export interface CityAttributes {
   id: number;
