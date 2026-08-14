@@ -105,17 +105,17 @@ const router = Router();
  *           application/json:
  *             example:
  *               id: 3
- *               email: "daniel@gmail.com"
- *               password: "123456"
- *               document_type_id: 1
- *               document_number: "1045678901"
- *               first_name: "Daniel"
- *               last_name: "Mendoza"
- *               birth_date: "2002-05-15"
- *               gender: "Masculino"
- *               phone: "3001234567"
- *               address: "Calle 123"
- *               city_id: 5
+ *               email:"daniel@gmail.com"
+ *               password:"123456"
+ *               document_type_id:1
+ *               document_number:"1045678901"
+ *               first_name:"Daniel"
+ *               last_name:"Mendoza"
+ *               birth_date:"2002-05-15"
+ *               gender:"Masculino"
+ *               phone:"3001234567"
+ *               address:"Calle 123"
+ *               city_id:5
  *       400:
  *         description: Datos inválidos o correo duplicado
  *         content:
