@@ -1,4 +1,4 @@
-import CinemaComplex from "../models/cinema.complex.model";
+import CinemaComplex from "../models/complex/cinema.complex.model";
 import { ICinemaComplexRepository } from "./interfaces/cinema.complex.repository.interface";
 
 /**
