@@ -17,6 +17,7 @@ import DocumentType from "./document-type.model";
 import User from "./user.model";
 import Genre from "./genre.model";
 import Format from "./format.model";
+import CinemaComplex from "./cinema.complex.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -44,6 +45,16 @@ City.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
 City.hasMany(User, { foreignKey: "cityId", as: "users" });
 
 /**
+ * Una ciudad tiene muchos complejos de cine (relación uno a muchos).
+ */
+City.hasMany(CinemaComplex, { foreignKey: "cityId", as: "cinemaComplexes" });
+
+/**
+ * Un complejo de cine pertenece a una única ciudad (relación muchos a uno).
+ */
+CinemaComplex.belongsTo(City, { foreignKey: "cityId", as: "city" });
+
+/**
  * Un usuario pertenece a una única ciudad (relación muchos a uno).
  */
 User.belongsTo(City, { foreignKey: "cityId", as: "city" });
@@ -69,4 +80,5 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
+export { CinemaComplex };
 export { Country, Department, City, Role, DocumentType, User, Genre, Format };
