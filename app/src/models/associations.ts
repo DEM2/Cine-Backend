@@ -17,7 +17,8 @@ import DocumentType from "./document-type.model";
 import User from "./user.model";
 import Genre from "./genre.model";
 import Format from "./format.model";
-import CinemaComplex from "./cinema.complex.model";
+import CinemaComplex from "./complex/cinema.complex.model";
+import RoomType from "./complex/room-type.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -82,3 +83,4 @@ User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
 export { CinemaComplex };
 export { Country, Department, City, Role, DocumentType, User, Genre, Format };
+export { RoomType };
