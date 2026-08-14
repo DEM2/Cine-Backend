@@ -15,6 +15,8 @@ import City from "./geo_locations/city.model";
 import Role from "./role.model";
 import DocumentType from "./document-type.model";
 import User from "./user.model";
+import Movie from "./movie.model";
+import Showtime from "./showtime.model";
 import Genre from "./genre.model";
 import Format from "./format.model";
 import CinemaComplex from "./complex/cinema.complex.model";
@@ -102,7 +104,32 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
+/**
+ * Un movie tiene muchos showtimes (relación uno a muchos).
+ */
+Movie.hasMany(Showtime, { foreignKey: "movieId", as: "showtimes" });
+
+/**
+ * Un showtime pertenece a un único movie (relación muchos a uno).
+ */
+Showtime.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+Movie.belongsToMany(Genre, {
+    through: "movie_genres",
+    foreignKey: "movieId",
+    otherKey: "genreId",
+    as: "genres"
+});
+
+Genre.belongsToMany(Movie, { 
+    through: "movie_genres", 
+    foreignKey: "genreId", 
+    otherKey: "movieId", 
+    as: "movies" 
+});
+
+
+export { Country, Department, City, Role, DocumentType, User, Genre, Movie, Showtime, Format };
 export { CinemaComplex };
-export { Country, Department, City, Role, DocumentType, User, Genre, Format };
 export { RoomType };
 export { Room };

@@ -21,7 +21,7 @@
  * @property {string} synopsis -  descripción de la peliculas.
  * @property {string} director -  el director de la peliculas.
  * @property {number} duration_minutes -  duracion de la pelicula
- * @property {string} genre - Género de la película.
+ * @property {number[]} genres - Géneros de la película.
  * @property {string} rating - Clasificación (A, B, B15, C, etc.).
  * @property {string} language - Idioma original.
  * @property {boolean} dubbed - Indica si está disponible doblada.
@@ -73,7 +73,7 @@ export interface CreateMovieDto {
     /**
      * Género de la película.
      */
-    genre: string;
+    genres: number[];
 
     /**
      * Clasificación de la película (A, B, B15, C, etc.).

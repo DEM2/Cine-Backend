@@ -9,7 +9,6 @@
  *  - Atributos del modelo (`DepartmentAttributes`).
  *  - Atributos requeridos para la creación (`DepartmentCreationAttributes`).
  *  - Definición del modelo con sus columnas y restricciones.
- *
  * Este modelo es utilizado por los servicios y controladores para realizar operaciones CRUD.
  */
 

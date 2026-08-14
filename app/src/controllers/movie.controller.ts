@@ -249,8 +249,36 @@ export const getMovieById = async (_req: Request, res: Response): Promise<Respon
  * Stub temporal: la lógica se implementa después.
  */
 export const getMovieFunctions = async (_req: Request, res: Response): Promise<Response> => {
-    return res.status(501).json({
-        message: "Pendiente: implementar funciones de película",
-    });
+    try {
+        const movieId = Number(_req.params.id)
+        const functions = await movieService.findFunctions(movieId);
+        return res.status(200).json(functions);
+    } catch (error: any) {
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+};
+
+export const getRecommendedMovies = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const movieId = Number(_req.params.id)
+        const recommendedMovies = await movieService.findRecommendedMovies(movieId);
+        return res.status(200).json(recommendedMovies);
+    } catch (error: any) {
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+        return res.status(500).json({
+            error: error.message
+        });
+    }
 };
 

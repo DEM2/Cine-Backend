@@ -8,9 +8,8 @@ import { CreateMovieDto } from "../../dto/movie/create-movie.dto";
  */
 
 export interface IMovieService {
-
+    
     create(dto: CreateMovieDto): Promise<movie>;
 
     findAll(): Promise<movie[]>;
-
 }
