@@ -3,7 +3,7 @@
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
 import repository from "../repositories/movie.repository";
 import AppError from "../error/appError";
-import Movie from "../models/movie.model";
+import Movie, { MovieCreationAttributes } from "../models/movie.model";
 
 import { IMovieService } from "../services/interfaces/movie.service.interface"
 import Showtime from "../models/showtime.model";
@@ -24,6 +24,10 @@ class MovieService implements IMovieService {
 
     async create(dto: CreateMovieDto): Promise<Movie> {
 
+        if (!dto.genres || dto.genres.length === 0) {
+            throw new AppError(400, "Debes asignar al menos un género a la película.");
+        }
+
         // Verificar si ya existe una película con el mismo título
         const existingMovie = await repository.findByTitle(dto.title);
 
@@ -31,8 +35,8 @@ class MovieService implements IMovieService {
             throw new AppError(400, "La película ya se encuentra registrada.");
         }
 
-        // Crear la película
-        return await repository.create(dto as Movie);
+        const { genres, ...movieData } = dto;
+        return await repository.create(movieData as MovieCreationAttributes, genres);
     }
 
     async findAll(): Promise<Movie[]> {
@@ -61,11 +65,13 @@ class MovieService implements IMovieService {
     async findRecommendedMovies(id: number): Promise<Movie[]> {
         const movie = await this.findById(id) ;
 
-        const recommendedMovies = await repository.findRecommendedMovies(movie.id, movie.genre);
-        if (!recommendedMovies) {
-            return [];
+        const genres = (movie as any).genres as {id: number}[] | undefined;
+        const genreIds = genres?.map(genre => genre.id) ?? [];
+
+        if (genreIds.length === 0) {
+            throw new AppError(400, "La película no tiene géneros asignados.");
         }
-        return recommendedMovies;
+        return await repository.findRecommendedMovies(movie.id, genreIds);
     }
 }
 

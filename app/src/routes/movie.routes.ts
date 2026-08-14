@@ -10,6 +10,7 @@
  *  - `GET /api/movies/`  : Obtener todas las movies.
  *  - `GET /api/movies/:id` : Obtener el detalle de una movie.
  *  - `GET /api/movies/:id/functions` : Obtener funciones futuras de una movie.
+ *  - `GET /api/movies/:id/recommendations` : Obtener películas recomendadas por géneros.
  *
  * Cada ruta se conecta con su respectivo controlador.
  */
@@ -49,7 +50,7 @@ const router = Router();
  *               - synopsis
  *               - director
  *               - duration_minutes
- *               - genre
+ *               - genres
  *               - rating
  *               - language
  *               - poster
@@ -69,9 +70,13 @@ const router = Router();
  *               duration_minutes:
  *                 type: number
  *                 example: 148
- *               genre:
- *                 type: string
- *                 example: "Ciencia ficción"
+ *               genres:
+ *                 type: array
+ *                 description: IDs de géneros existentes (tabla genres). Al menos uno es obligatorio.
+ *                 items:
+ *                   type: number
+ *                 minItems: 1
+ *                 example: [1, 6]
  *               rating:
  *                 type: string
  *                 example: "PG-13"
@@ -104,11 +109,16 @@ const router = Router();
  *               director: "Christopher Nolan"
  *               duration_minutes: 148
  *       400:
- *         description: Invalid data or movie already registered
+ *         description: Datos inválidos, sin géneros, o película ya registrada
  *         content:
  *           application/json:
- *             example:
- *               error: "La película ya se encuentra registrada."
+ *             examples:
+ *               alreadyRegistered:
+ *                 value:
+ *                   error: "La película ya se encuentra registrada."
+ *               missingGenres:
+ *                 value:
+ *                   error: "Debes asignar al menos un género a la película."
  *       500:
  *         description: Internal server error
  *         content:
@@ -187,7 +197,6 @@ router.get("/", getMovies);
  *               synopsis: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
  *               director: "Christopher Nolan"
  *               duration_minutes: 148
- *               genre: "Ciencia ficción"
  *               rating: "PG-13"
  *               language: "Inglés"
  *               dubbed: true
@@ -195,6 +204,11 @@ router.get("/", getMovies);
  *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
  *               premiere: false
  *               audience_rating: 4.8
+ *               genres:
+ *                 - id: 1
+ *                   name: "Acción"
+ *                 - id: 6
+ *                   name: "Ciencia ficción"
  *       404:
  *         description: La película no existe
  *         content:
@@ -282,10 +296,10 @@ router.get("/:id/functions", getMovieFunctions);
 /**
  * GET /api/movies/{id}/recommendations
  * ------------------------------------
- * Obtiene películas recomendadas (mismo género, excluyendo la película actual).
+ * Obtiene películas recomendadas (comparten al menos un género, excluyendo la película actual).
  *
  * Response:
- *  - 200 OK: Lista de películas recomendadas (objeto movie completo).
+ *  - 200 OK: Lista de películas recomendadas (puede ser [] si no hay coincidencias).
  *  - 404 Not Found: La película no existe.
  *  - 500 Internal Server Error: Error inesperado.
  *
@@ -293,6 +307,7 @@ router.get("/:id/functions", getMovieFunctions);
  * /api/movies/{id}/recommendations:
  *   get:
  *     summary: Obtener películas recomendadas para una película
+ *     description: Devuelve otras películas que comparten al menos un género con la película indicada.
  *     tags: [Movies]
  *     parameters:
  *       - in: path
@@ -314,7 +329,6 @@ router.get("/:id/functions", getMovieFunctions);
  *                 synopsis: "Un grupo de exploradores viaja a través de un agujero de gusano en el espacio."
  *                 director: "Christopher Nolan"
  *                 duration_minutes: 169
- *                 genre: "Ciencia ficción"
  *                 rating: "PG-13"
  *                 language: "Inglés"
  *                 dubbed: true
@@ -322,13 +336,15 @@ router.get("/:id/functions", getMovieFunctions);
  *                 poster: "https://image.tmdb.org/t/p/original/interstellar.jpg"
  *                 premiere: false
  *                 audience_rating: 4.9
+ *                 genres:
+ *                   - id: 6
+ *                     name: "Ciencia ficción"
  *               - id: 3
  *                 title: "The Prestige"
  *                 original_title: "The Prestige"
  *                 synopsis: "Dos magos rivales se enfrentan en una competencia de ilusiones."
  *                 director: "Christopher Nolan"
  *                 duration_minutes: 130
- *                 genre: "Ciencia ficción"
  *                 rating: "PG-13"
  *                 language: "Inglés"
  *                 dubbed: false
@@ -336,6 +352,11 @@ router.get("/:id/functions", getMovieFunctions);
  *                 poster: "https://image.tmdb.org/t/p/original/prestige.jpg"
  *                 premiere: false
  *                 audience_rating: 4.7
+ *                 genres:
+ *                   - id: 4
+ *                     name: "Drama"
+ *                   - id: 6
+ *                     name: "Ciencia ficción"
  *       404:
  *         description: La película no existe
  *         content:

@@ -18,6 +18,8 @@ import User from "./user.model";
 import Movie from "./movie.model";
 import Showtime from "./showtime.model";
 import Genre from "./genre.model";
+import Format from "./format.model";
+
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
  */
@@ -94,4 +96,4 @@ Genre.belongsToMany(Movie, {
 });
 
 
-export { Country, Department, City, Role, DocumentType, User, Genre, Movie, Showtime };
+export { Country, Department, City, Role, DocumentType, User, Genre, Movie, Showtime, Format };

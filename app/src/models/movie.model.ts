@@ -27,7 +27,6 @@ export interface MovieAttributes {
   synopsis: string;
   director: string;
   duration_minutes: number;
-  genre: string;
   rating: string;
   language: string;
   dubbed: boolean;
@@ -72,9 +71,6 @@ class Movie
 
   /** Duración en minutos. */
   public duration_minutes!: number;
-
-  /** Género de la película. */
-  public genre!: string;
 
   /** Clasificación de la película. */
   public rating!: string;
@@ -126,10 +122,6 @@ Movie.init(
     },
     duration_minutes: {
       type: DataTypes.INTEGER,
-      allowNull: false,
-    },
-    genre: {
-      type: DataTypes.STRING(50),
       allowNull: false,
     },
     rating: {
