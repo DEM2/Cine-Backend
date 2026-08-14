@@ -66,38 +66,38 @@ const router = Router();
  *             properties:
  *               email:
  *                 type: string
- *                 example: "daniel@gmail.com"
+ *                 example:"daniel@gmail.com"
  *               password:
  *                 type: string
- *                 example: "123456"
+ *                 example:"123456"
  *               document_type_id:
  *                 type: integer
- *                 example: 1
+ *                 example:1
  *               document_number:
  *                 type: string
- *                 example: "1045678901"
+ *                 example:"1045678901"
  *               first_name:
  *                 type: string
- *                 example: "Daniel"
+ *                 example:"Daniel"
  *               last_name:
  *                 type: string
- *                 example: "Mendoza"
+ *                 example:"Mendoza"
  *               birth_date:
  *                 type: string
  *                 format: date
- *                 example: "2002-05-15"
+ *                 example:"2002-05-15"
  *               gender:
  *                 type: string
- *                 example: "Masculino"
+ *                 example:"Masculino"
  *               phone:
  *                 type: string
- *                 example: "3001234567"
+ *                 example:"3001234567"
  *               address:
  *                 type: string
- *                 example: "Calle 123"
+ *                 example:"Calle 123"
  *               city_id:
  *                 type: integer
- *                 example: 5
+ *                 example:1
  *     responses:
  *       201:
  *         description: Usuario creado exitosamente
@@ -105,17 +105,17 @@ const router = Router();
  *           application/json:
  *             example:
  *               id: 3
- *               email: "daniel@gmail.com"
- *               password: "123456"
- *               document_type_id: 1
- *               document_number: "1045678901"
- *               first_name: "Daniel"
- *               last_name: "Mendoza"
- *               birth_date: "2002-05-15"
- *               gender: "Masculino"
- *               phone: "3001234567"
- *               address: "Calle 123"
- *               city_id: 5
+ *               email:"daniel@gmail.com"
+ *               password:"123456"
+ *               document_type_id:1
+ *               document_number:"1045678901"
+ *               first_name:"Daniel"
+ *               last_name:"Mendoza"
+ *               birth_date:"2002-05-15"
+ *               gender:"Masculino"
+ *               phone:"3001234567"
+ *               address:"Calle 123"
+ *               city_id:1
  *       400:
  *         description: Datos inválidos o correo duplicado
  *         content:
