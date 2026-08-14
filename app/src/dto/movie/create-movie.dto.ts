@@ -110,4 +110,24 @@ export interface CreateMovieDto {
      */
     audience_rating: number;
 
+    /**
+     * (Opcional) Horarios de función asociados a la película.
+     * Si se proporciona, se crearán automáticamente al crear la película.
+     * 
+     * Formatos disponibles (IDs):
+     *  - 1: 2D
+     *  - 2: 3D
+     *  - 3: IMAX
+     *  - 4: VIP
+     *  - 5: 4DX
+     */
+    showtimes?: Array<{
+        date: string;              // Formato: YYYY-MM-DD
+        time: string;              // Formato: HH:MM
+        formatId: number;          // ID del formato (1-5)
+        complex: string;           // Nombre del complejo de cines
+        isActive?: boolean;        // Por defecto: true
+        isSoldOut?: boolean;       // Por defecto: false
+    }>;
+
 }
