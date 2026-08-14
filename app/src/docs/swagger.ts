@@ -36,8 +36,9 @@ const options = {
       description: "Documentación generada automáticamente con Swagger para la API de ejemplo.",
     },
   },
-  apis: ["./src/routes/*.ts"], // Escanea las rutas para extraer anotaciones Swagger
+  apis: ["./src/routes/*.ts"],// Escanea las rutas para extraer anotaciones Swagger
 };
+
 
 /**
  * Esquema de especificación Swagger/OpenAPI generado dinámicamente.

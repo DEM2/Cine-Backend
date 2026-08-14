@@ -1,15 +1,14 @@
 // app/src/models/user.model.ts
-
 /**
  * Modelo de Usuario
- * -----------------
+ *
  * Este archivo define el modelo `User` de Sequelize, que representa la tabla `users` en la base de datos.
- * 
+ *
  * Contiene:
  *  - Atributos del modelo (`UserAttributes`).
  *  - Atributos requeridos para la creación (`UserCreationAttributes`).
  *  - Definición del modelo con sus columnas y restricciones.
- * 
+ *
  * Este modelo es utilizado por los servicios y controladores para realizar operaciones CRUD.
  */
 
@@ -20,44 +19,37 @@ import sequelize from "../config/database";
  * Atributos principales de la entidad `User`.
  */
 export interface UserAttributes {
-  id?: number;
+  id: number;
   email: string;
-  passwordHash: string;
+  password: string;
   documentTypeId: number;
   documentNumber: string;
   firstName: string;
   lastName: string;
-  birthDate: Date;
-  gender: string;
+  birthDate: string;
+  gender?: string;
   phone: string;
   address: string;
-  /*avatarUrl: string; */
   cityId: number;
-  favoriteComplexId: number;
   roleId: number;
   status: string;
-  /*opcional ya que el usuario puede no tener intentos fallidos */
-  failedLoginAttempts?: number;
-  /*opcional ya que el usuario puede no tener bloqueo */
+  failedLoginAttempts: number;
   lockoutUntil?: Date | null;
-  /*opcional ya que el usuario puede no tener fecha de creación */
-  createdAt?: Date;
-  /*opcional ya que el usuario puede no tener fecha de actualización */
-  updatedAt?: Date;
-  
+  favoriteComplexId?: number | null;
+
 }
 
 /**
  * Atributos utilizados para la creación de un nuevo usuario.
- * 
+ *
  * Se utiliza `Optional` para indicar que `id` no es requerido al momento
  * de la creación, ya que se genera automáticamente por la base de datos.
  */
-export interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
+export interface UserCreationAttributes extends Optional<UserAttributes, "id" | "failedLoginAttempts" | "lockoutUntil"> {}
 
 /**
  * Clase que representa el modelo `User` en Sequelize.
- * 
+ *
  * Implementa los atributos definidos en `UserAttributes` y `UserCreationAttributes`.
  */
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
@@ -67,79 +59,73 @@ class User extends Model<UserAttributes, UserCreationAttributes> implements User
   /** Dirección de correo electrónico única del usuario. */
   public email!: string;
 
-  /** Contreseña */
-  public passwordHash!: string;
+  /** Contraseña encriptada del usuario. */
+  public password!: string;
 
-  /** Tipo de documento del usuario. */
+  /** Identificador del tipo de documento del usuario (clave foránea). */
   public documentTypeId!: number;
 
-  /** Número de documento del usuario. */
+  /** Número de documento de identidad, único por usuario. */
   public documentNumber!: string;
 
-  /** Nombre del usuario. */
+  /** Primer nombre / nombres del usuario. */
   public firstName!: string;
 
-  /** Apellido del usuario. */
+  /** Apellidos del usuario. */
   public lastName!: string;
 
-  /** Fecha de nacimiento del usuario. */
-  birthDate!: Date;
+  /** Fecha de nacimiento del usuario (formato YYYY-MM-DD). */
+  public birthDate!: string;
 
   /** Género del usuario. */
-  public gender!: string;
+  public gender?: string;
 
-  /** Número de teléfono del usuario. */
+  /** Número de teléfono de contacto del usuario. */
   public phone!: string;
 
-  /** Dirección del usuario. */
+  /** Dirección de residencia del usuario. */
   public address!: string;
 
-  /** Identificador de la ciudad del usuario. */
+  /** Identificador de la ciudad de residencia del usuario (clave foránea). */
   public cityId!: number;
 
-  /** Identificador del complejo favorito del usuario. */
-  public favoriteComplexId!: number;
-
-  /** Identificador del rol del usuario. */
+  /**
+   * Identificador del rol del usuario (clave foránea).
+   * Todo usuario creado a través del registro público recibe automáticamente
+   * el rol "Natural" (ver `UserService.create`).
+   */
   public roleId!: number;
 
-  /** Estado del usuario. */
+  /*Estado de la cuenta del usuario*/
   public status!: string;
 
-  /** Número de intentos fallidos de inicio de sesión del usuario. */
+  /** Cantidad de intentos fallidos de inicio de sesión. */
   public failedLoginAttempts!: number;
 
-  /** Fecha y hora hasta la cual el usuario está bloqueado. */
-  public lockoutUntil!: Date | null;
+  /** Fecha y hora hasta la cual el usuario permanece bloqueado. */
+  public lockoutUntil?: Date | null;
 
-  /** Fecha de creación del registro del usuario. */
-  public createdAt!: Date;
+  /* Complejo favorito del usuario */  
+  public favoriteComplexId?: number | null;
 
-  /** Fecha de última actualización del registro del usuario. */
-  public updatedAt!: Date;
-
+  
 }
 
 /**
  * Inicialización del modelo `User` con la configuración de Sequelize.
- * 
- * - `id`: Entero autoincremental, clave primaria.
- * - `firstName`: Nombre obligatorio con máximo 100 caracteres.
- * - `lastName`: Apellido obligatorio con máximo 100 caracteres.
- * - `email`: Correo electrónico único y obligatorio con máximo 100 caracteres.
- * - `passwordHash`: Hash de la contraseña obligatorio con máximo 100 caracteres.
- * - `documentTypeId`: Tipo de documento obligatorio.
- * - `documentNumber`: Número de documento obligatorio con máximo 20 caracteres.      
- * - `birthDate`: Fecha de nacimiento obligatoria.
- * - `gender`: Género obligatorio con máximo 10 caracteres.
- * - `phone`: Teléfono obligatorio con máximo 20 caracteres.
- * - `address`: Dirección obligatoria con máximo 200 caracteres.
- * - `cityId`: Identificador de ciudad obligatorio.
- * - `favoriteComplexId`: Identificador de complejo favorito obligatorio.
- * - `roleId`: Identificador de rol obligatorio.
- * - `status`: Estado obligatorio con máximo 20 caracteres.
- * - `failedLoginAttempts`: Número de intentos fallidos de inicio de sesión, opcional, por defecto 0.
- * - `lockoutUntil`: Fecha y hora hasta la cual el usuario está bloqueado, opcional.
+ *
+ *  - `id`: Entero autoincremental, clave primaria.
+ *  - `email`: Correo electrónico único y obligatorio con máximo 100 caracteres.
+ *  - `password`: Contraseña encriptada, obligatoria.
+ *  - `documentTypeId`: Clave foránea obligatoria que referencia la tabla `document_types`.
+ *  - `documentNumber`: Número de documento único y obligatorio.
+ *  - `firstName` / `lastName`: Nombres y apellidos obligatorios.
+ *  - `birthDate`: Fecha de nacimiento obligatoria.
+ *  - `gender`: Género obligatorio.
+ *  - `phone`: Teléfono de contacto obligatorio.
+ *  - `address`: Dirección de residencia obligatoria.
+ *  - `cityId`: Clave foránea obligatoria que referencia la tabla `cities`.
+ *  - `roleId`: Clave foránea obligatoria que referencia la tabla `roles`.
  */
 User.init(
   {
@@ -148,93 +134,88 @@ User.init(
       autoIncrement: true,
       primaryKey: true,
     },
-
     email: {
       type: DataTypes.STRING(100),
       unique: true,
       allowNull: false,
     },
-
-    passwordHash: {
-      type: DataTypes.STRING(100),
-      unique: false,
+    password: {
+      type: DataTypes.STRING(255),
       allowNull: false,
       field: "password_hash",
     },
-
+    documentTypeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "document_type_id",
+      references: {
+        model: "document_types",
+        key: "id",
+      },
+    },
+    documentNumber: {
+      type: DataTypes.STRING(20),
+      allowNull: false,
+      unique: true,
+      field: "document_number",
+    },
     firstName: {
       type: DataTypes.STRING(100),
       allowNull: false,
       field: "first_name",
     },
-
     lastName: {
       type: DataTypes.STRING(100),
       allowNull: false,
       field: "last_name",
     },
-
-    documentTypeId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "document_type_id",
-    },
-
-    documentNumber: {
-      type: DataTypes.STRING(20),
-      allowNull: false,
-      field: "document_number",
-    },
-
     birthDate: {
       type: DataTypes.DATEONLY,
       allowNull: false,
       field: "birth_date",
     },
-
     gender: {
-      type: DataTypes.STRING(10),
-      allowNull: false,
+      type: DataTypes.STRING(20),
+      allowNull: true,
     },
-
     phone: {
       type: DataTypes.STRING(20),
       allowNull: false,
     },
-
     address: {
-      type: DataTypes.STRING(200),
+      type: DataTypes.STRING(150),
       allowNull: false,
     },
-
     cityId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       field: "city_id",
+      references: {
+        model: "cities",
+        key: "id",
+      },
     },
-
-    favoriteComplexId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "favorite_complex_id",
-    },
-
     roleId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       field: "role_id",
+      references: {
+        model: "roles",
+        key: "id",
+      },
     },
 
     status: {
       type: DataTypes.STRING(20),
       allowNull: false,
+      defaultValue: "INACTIVO",
     },
 
     failedLoginAttempts: {
       type: DataTypes.INTEGER,
-      allowNull: true,
-      field: "failed_login_attempts",
+      allowNull: false,
       defaultValue: 0,
+      field: "failed_login_attempts",
     },
 
     lockoutUntil: {
@@ -242,15 +223,18 @@ User.init(
       allowNull: true,
       field: "lockout_until",
     },
-    
+
+    favoriteComplexId: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
+      field: "favorite_complex_id",
+    },
   },
   {
     sequelize,
     modelName: "User",      // Nombre del modelo en Sequelize
     tableName: "users",     // Nombre de la tabla en la base de datos
-    timestamps: true,      // Incluye createdAt y updatedAt
-    createdAt: "created_at", // Mapea el campo createdAt a la columna created_at
-    updatedAt: "updated_at" // Mapea el campo updatedAt a la columna updated_at
+    timestamps: true,       // Incluye createdAt y updatedAt
   }
 );
 

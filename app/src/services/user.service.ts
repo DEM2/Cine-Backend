@@ -2,11 +2,21 @@
 
 import User from "../models/user.model";
 import { CreateUserDto } from "../dto/create-user.dto";
+import { UserResponseDto } from "../dto/user-response.dto";
 import repository from "../repositories/user.repository";
+import cityRepository from "../repositories/city.repository";
+import documentTypeRepository from "../repositories/document-type.repository";
+import roleRepository from "../repositories/role.repository";
+import { CinemaComplexRepository } from "../repositories/cinema-complex.repository";
 import { IUserService } from "./interfaces/user.service.interface";
 import AppError from "../error/appError";
 import bcrypt from "bcrypt";
-
+import membershipService from "./membership.service";
+import membershipLevelRepository from "../repositories/membership-level.repository";
+import emailVerificationService from "./email-verification.service";
+import captchaService from "./captcha.service";
+import UserConsent from "../models/user-consent.model";
+import UserNotificationPreference from "../models/user-notification-preference.model";
 /**
  * Servicio de Usuarios
  * --------------------
@@ -32,33 +42,206 @@ import bcrypt from "bcrypt";
  * El Repository únicamente conoce cómo guardar y consultar información.
  */
 
-
+const DEFAULT_ROLE_NAME = "MIEMBRO"; // Rol por defecto para todos los usuarios registrados a través de este servicio.
 class UserService implements IUserService {
 
-    async create(dto: CreateUserDto): Promise<User> {
+    // Creamos una instancia del repository de complejos.
+    // Lo utilizaremos para comprobar que el complejo favorito
+    // seleccionado por el usuario realmente exista.
+    private cinemaComplexRepository = new CinemaComplexRepository();
+
+    async create(dto: CreateUserDto): Promise<UserResponseDto> {
+
+        // Validar captcha antes de continuar con el registro
+        await captchaService.verify(dto.captchaToken);
+        
+        // Verificar que los correos coincidan
+        if (dto.email !== dto.email_confirmation) {
+            throw new AppError(400, "Los correos electrónicos no coinciden");
+        }
+
+        // Verificar que las contraseñas coincidan
+        if (dto.password !== dto.password_confirmation) {
+            throw new AppError(400, "Las contraseñas no coinciden");
+        }
+
+        // validacion de contraseña, minuscula, mayuscula, numero, caracter especial y 10 caracteres
+        const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{10,}$/;
+        if (!passwordRegex.test(dto.password)) {
+            throw new AppError( 400, "La contraseña debe tener mínimo 10 caracteres, una mayúscula, una minúscula, un número y un carácter especial");
+        }
+
+        // Validar consentimiento de tratamiento de datos
+        if (!dto.data_processing_consent) {
+            throw new AppError(
+                400,
+                "Debe aceptar el tratamiento de datos personales"
+            );
+        }
+    
+        // Validar términos y condiciones
+        if (!dto.terms_and_conditions) {
+            throw new AppError(
+                400,
+                "Debe aceptar los términos y condiciones"
+            );
+        }
 
         // Verificar si el correo ya existe
         const existingUser = await repository.findByEmail(dto.email);
-
         if (existingUser) {
             throw new AppError(400, "El correo ya se encuentra registrado");
         }
 
+
+        // Validar que el tipo de documento exista
+        const documentType = await documentTypeRepository.findById(dto.document_type_id);
+        if (!documentType) {
+            throw new AppError(404, "Tipo de documento no encontrado");
+        }
+
+        // Validar que la ciudad exista
+        const city = await cityRepository.findById(dto.city_id);
+        if (!city) {
+            throw new AppError(404, "Ciudad no encontrada");
+        }
+
+        // Validar que el complejo favorito exista, si fue seleccionado
+        if (dto.favorite_complex_id) {
+            const complex = await this.cinemaComplexRepository.findById(
+                dto.favorite_complex_id
+            );
+            
+            if (!complex) {
+                throw new AppError(404, "Complejo no encontrado");
+            }
+        }
+
+        // Obtiene el rol "MIEMBRO" (lo crea si aún no existe). Todo usuario
+        // registrado a través de este servicio recibe este rol por defecto.
+        const role = await roleRepository.findOrCreateByName(DEFAULT_ROLE_NAME);
+
         // Encriptar contraseña
         const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-        // Crear un nuevo objeto con la contraseña encriptada
-        const user = {
-            ...dto,
-            password: hashedPassword
-        };
+        // Persiste el usuario, mapeando el DTO (snake_case, tal como llega
+        // del cliente) a los atributos del modelo (camelCase) y asignando
+        // el rol "MIEMBRO" por defecto.
+        // se guarda en postgress
+        const user = await repository.create({
+            email: dto.email,
+            password: hashedPassword,
+            documentTypeId: dto.document_type_id,
+            documentNumber: dto.document_number,
+            firstName: dto.first_name,
+            lastName: dto.last_name,
+            birthDate: dto.birth_date,
+            gender: dto.gender,
+            phone: dto.phone,
+            address: dto.address,
+            cityId: dto.city_id,
+            roleId: role.id,
+            status: "INACTIVO",
+            favoriteComplexId: dto.favorite_complex_id,
+        });
 
-        return await repository.create(user);
+        // Guardar consentimientos del usuario
+        await UserConsent.create({
+            userId: user.id,
+            consentType: "data_processing",
+            // contiene lo que el usuario marco en el formulario (true, false)
+            accepted: dto.data_processing_consent,
+            // fecha y hora en el que se acepto 
+            acceptedAt: new Date(),
+        });
+
+        await UserConsent.create({
+            userId: user.id,
+            consentType: "terms_and_conditions",
+            accepted: dto.terms_and_conditions,
+            acceptedAt: new Date(),
+        });
+
+        await UserConsent.create({
+            userId: user.id,
+            consentType: "commercial_communications",
+            // si tiene un valor, utiliza ese valor. si viene null utiliza false
+            accepted: dto.commercial_communications ?? false,
+            acceptedAt: dto.commercial_communications ? new Date() : undefined,
+        });
+
+        // Crear preferencias de notificaciones del usuario
+        await UserNotificationPreference.create({
+            userId: user.id,
+            // el usuario debe recibir correos de activacion
+            transactionalEmail: true,
+            promotionalEmail: dto.commercial_communications ?? false,
+            // no se solicitan durante el registro
+            sms: false,
+            push: false,
+        });
+
+        // Crear una membresía para el usuario recién creado con el nivel "BASICO"
+        const level = await membershipLevelRepository.findByName("BASICO");
+        // comprueba que realmente exista 
+        if (!level) {
+            throw new AppError(
+                404,
+                "Nivel de membresía BASICO no encontrado"
+            );
+        }
+
+        console.log("USUARIO CREADO:", user.id);
+        console.log("NIVEL ENCONTRADO:", level.id, level.name);
+
+        // crea la membresia y espera a que termine 
+        await membershipService.create(
+            user.id,
+            level.id
+        );
+
+        console.log("MEMBRESIA CREADA");
+
+        const token =
+        await emailVerificationService.createVerificationToken(user.id);
+
+        console.log("TOKEN DE VERIFICACIÓN:", token);
+
+        // convierte el usuario a formato de respuesta que se quiere enviar
+        // y devuelve el resultado
+        return  this.toResponseDto(user, role.name);  
+
     }
 
     async findAll(): Promise<User[]> {
         return await repository.findAll();
     }
+
+
+    // toma el User que acabamos de crear y lo convierte en el objeto 
+    // que se quiere devolver
+    private toResponseDto(user: User, roleName?: string): UserResponseDto {
+
+        return {
+            id: user.id,
+            name: `${user.firstName} ${user.lastName}`,
+            email: user.email,
+            document_type_id: user.documentTypeId,
+            document_number: user.documentNumber,
+            first_name: user.firstName,
+            last_name: user.lastName,
+            birth_date: user.birthDate,
+            gender: user.gender,
+            phone: user.phone,
+            address: user.address,
+            city_id: user.cityId,
+            role_id: user.roleId,
+            role: roleName ?? "",
+            status: user.status,
+        };
+
+    }
+   
 }
 
 export default new UserService();

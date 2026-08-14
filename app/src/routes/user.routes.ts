@@ -13,75 +13,9 @@
  */
 
 import { Router } from "express";
-import { auth, createUser, getUsers } from "../controllers/user.controller";
+import { getUsers } from "../controllers/user.controller";
 
 const router = Router();
-
-
-/**
- * POST /
- * -----
- * Crea un nuevo usuario en la base de datos.
- * 
- * Request Body:
- *  - `name`: string (obligatorio)
- *  - `email`: string (obligatorio, único)
- *  - `password`: string (obligatorio)
- * 
- * Response:
- *  - 201 Created: Retorna el usuario creado en formato JSON.
- *  - 500 Internal Server Error: En caso de error en la creación.
- * 
- * 
- * @swagger
- * /api/users:
- *   post:
- *     summary: Crear un nuevo usuario
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - name
- *               - email
- *               - password
- *             properties:
- *               name:
- *                 type: string
- *                 example: "John Doe"
- *               email:
- *                 type: string
- *                 example: "john.doe@example.com"
- *               password: 
- *                 type: string
- *                 example: "123"
- *     responses:
- *       201:
- *         description: Usuario creado exitosamente
- *         content:
- *           application/json:
- *             example:
- *               id: 3
- *               name: "John Doe"
- *               email: "john.doe@example.com"
- *               password: "123"
- *       400:
- *         description: Datos inválidos
- *         content:
- *           application/json:
- *             example:
- *               error: "El correo ya existe"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             example:
- *               error: "No se pudo crear el usuario"
- */
-router.post("/", createUser);
 
 /**
  * GET /
@@ -123,62 +57,6 @@ router.post("/", createUser);
  *               error: "Error al obtener los usuarios"
  */
 router.get("/", getUsers);
-
-
-/**
- * POST /
- * -----
- * Autenticacion
- * 
- * Request Body:
- *  - `email`: string (obligatorio, único)
- *  - `password`: string (obligatorio)
- * 
- * Response:
- *  - 200 successfully: Retorna el usuario autenticado en formato JSON.
- *  - 500 Internal Server Error: En caso de error en la busqueda.
- * 
- * 
- * @swagger
- * /api/users/auth:
- *   post:
- *     summary: Autenticar
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 example: "john.doe@example.com"
- *               password: 
- *                 type: string
- *                 example: "123"
- *     responses:
- *       200:
- *         description: usuario autenticado
- *         content:
- *           application/json:
- *             example:
- *               id: 3
- *               name: "John Doe"
- *               email: "john.doe@example.com"
- *               password: "123"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             example:
- *               error: "No se pudo hacer la busqueda"
- */
-
-router.post("/auth", auth);
 
 export default router;
 
