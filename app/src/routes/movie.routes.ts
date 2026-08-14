@@ -91,6 +91,35 @@ const router = Router();
  *               audience_rating:
  *                 type: number
  *                 example: 4.8
+ *               showtimes:
+ *                 type: array
+ *                 description: (Opcional) Horarios de función para la película
+ *                 items:
+ *                   type: object
+ *                   required:
+ *                     - date
+ *                     - time
+ *                     - formatId
+ *                     - complex
+ *                   properties:
+ *                     date:
+ *                       type: string
+ *                       example: "2026-08-20"
+ *                     time:
+ *                       type: string
+ *                       example: "14:30"
+ *                     formatId:
+ *                       type: number
+ *                       example: 1
+ *                     complex:
+ *                       type: string
+ *                       example: "Cinemark La Aurora"
+ *                     isActive:
+ *                       type: boolean
+ *                       example: true
+ *                     isSoldOut:
+ *                       type: boolean
+ *                       example: false
  *     responses:
  *       201:
  *         description: Movie created successfully
