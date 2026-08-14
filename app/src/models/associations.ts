@@ -14,7 +14,7 @@ import Department from "./department.model";
 import City from "./city.model";
 import Movie from "./movie.model";
 import Showtime from "./showtime.model";
-import "./format.model";
+import Format from "./format.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -42,3 +42,7 @@ export { Country, Department, City };
 //relacion entre peliculas y funciones
 Movie.hasMany(Showtime, { foreignKey: "movieId", as: "showtimes" });
 Showtime.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+// relacion entre funciones y formatos
+Showtime.belongsTo(Format, { foreignKey: "formatId", as: "format" });
+Format.hasMany(Showtime, { foreignKey: "formatId", as: "showtimes" });
