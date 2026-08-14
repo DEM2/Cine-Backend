@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import userService from "../services/user.service";
 import { CreateUserDto } from "../dto/create-user.dto";
 import AppError from "../error/appError";
-import authService from "../services/auth.service";
 
 /**
  * ============================================================================
@@ -160,18 +159,3 @@ export const getUsers = async (_req: Request, res: Response): Promise<Response> 
     }
 
 };
-
-export const auth = async (_req: Request, res: Response): Promise<Response> => {
-    try {
-       const {email, password} = _req.body;
-       const user = await authService.login(email, password);
-       return res.status(200).json(user)
-    }catch (error: any){
-        if(error instanceof AppError){
-            return res.status(error.status).json({message:error.message});
-        }
-        return res.status(500).json({
-            error: error.message
-        });
-    }
-}

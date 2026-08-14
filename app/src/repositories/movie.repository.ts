@@ -34,7 +34,7 @@ class MovieRepository implements IMovieRepository {
             include: [{
                 model: Genre,
                 as: 'genres',
-                attributes: ['name'],
+                attributes: ['name', 'id'],
                 through: { attributes: [] },
             }]
         });
@@ -69,15 +69,7 @@ class MovieRepository implements IMovieRepository {
 
     async findFunctionsByMovieId(movieId: number): Promise<Showtime[]> {
         return await Showtime.findAll({ 
-            where: { movieId }, 
-            include: [
-                {
-                    model: Genre,
-                    as: 'genres',
-                    attributes: ['name'],
-                    through: { attributes: [] },
-                }
-            ]
+            where: { movieId }
         });
     }
 
