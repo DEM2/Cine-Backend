@@ -107,7 +107,7 @@ class MovieRepository implements IMovieRepository {
                     model: Showtime,
                     as: "showtimes",
                     where: showtimeWhere,
-                    required: true,
+                    required: false,
                     include: [
                         {
                             model: Format,
@@ -138,7 +138,7 @@ class MovieRepository implements IMovieRepository {
                     model: Showtime,
                     as: "showtimes",
                     where: { isActive: true },
-                    required: true,
+                    required: false,
                 }
             ]
         });
