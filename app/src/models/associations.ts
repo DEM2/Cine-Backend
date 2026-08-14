@@ -20,6 +20,11 @@ import Format from "./format.model";
 import CinemaComplex from "./complex/cinema.complex.model";
 import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
+import Membership from "./membership.model";
+import UserConsent from "./user-consent.model";
+import UserNotificationPreference from "./user-notification-preference.model";
+import EmailVerification from "./email-verification.model";
+import MembershipLevel from "./membership-level.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -102,7 +107,64 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
+
+// MEMBERSHIP ASSOCIATIONS
+/**
+ * Un usuario puede tener una única membresía (relación uno a uno).
+ */
+User.hasOne(Membership, { foreignKey: "userId", as: "membership" });
+
+/**
+ * Una membresía pertenece a un único usuario (relación muchos a uno).
+ */
+Membership.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// CONSENT ASSOCIATIONS
+/**
+ * Un usuario puede tener muchos consentimientos (relación uno a muchos).
+ */
+User.hasMany(UserConsent, { foreignKey: "userId", as: "consents" });
+
+/**
+ * Un consentimiento pertenece a un único usuario (relación muchos a uno).
+ */
+UserConsent.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// PREFERENCE ASSOCIATIONS
+/**
+ * Un usuario puede tener una única preferencia de notificación (relación uno a uno).
+ */
+User.hasOne(UserNotificationPreference, { foreignKey: "userId", as: "notificationPreference" });
+
+/**
+ * Una preferencia de notificación pertenece a un único usuario (relación muchos a uno).
+ */
+UserNotificationPreference.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// EMAIL VERIFICATION ASSOCIATIONS
+/**
+ * Un usuario puede tener muchos códigos de verificación de correo electrónico (relación uno a muchos).
+ */
+User.hasMany(EmailVerification, { foreignKey: "userId", as: "emailVerifications" });
+
+/**
+ * Un código de verificación de correo electrónico pertenece a un único usuario (relación muchos a uno).
+ */
+EmailVerification.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// MEMBERSHIP LEVEL ASSOCIATIONS
+/**
+ * Un nivel de membresía puede tener muchas membresías (relación uno a muchos).
+ */
+MembershipLevel.hasMany(Membership, { foreignKey: "levelId", as: "memberships" });
+
+/**
+ * Una membresía pertenece a un único nivel de membresía (relación muchos a uno).
+ */
+Membership.belongsTo(MembershipLevel, { foreignKey: "levelId", as: "level" });
+
+export { Country, Department, City, Role, DocumentType, User, Membership, UserConsent, UserNotificationPreference, EmailVerification, MembershipLevel };
 export { CinemaComplex };
-export { Country, Department, City, Role, DocumentType, User, Genre, Format };
+export {  Genre, Format };
 export { RoomType };
 export { Room };
