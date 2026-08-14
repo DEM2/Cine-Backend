@@ -16,6 +16,10 @@ import Role from "./role.model";
 import DocumentType from "./document-type.model";
 import User from "./user.model";
 import Genre from "./genre.model";
+import Format from "./format.model";
+import CinemaComplex from "./complex/cinema.complex.model";
+import RoomType from "./complex/room-type.model";
+import Room from "./complex/room.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -43,6 +47,36 @@ City.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
 City.hasMany(User, { foreignKey: "cityId", as: "users" });
 
 /**
+ * Una ciudad tiene muchos complejos de cine (relación uno a muchos).
+ */
+City.hasMany(CinemaComplex, { foreignKey: "cityId", as: "cinemaComplexes" });
+
+/**
+ * Un complejo de cine pertenece a una única ciudad (relación muchos a uno).
+ */
+CinemaComplex.belongsTo(City, { foreignKey: "cityId", as: "city" });
+
+/**
+ * Un complejo de cine tiene muchas salas (relación uno a muchos).
+ */
+CinemaComplex.hasMany(Room, { foreignKey: "complexId", as: "rooms" });
+
+/**
+ * Una sala pertenece a un único complejo de cine (relación muchos a uno).
+ */
+Room.belongsTo(CinemaComplex, { foreignKey: "complexId", as: "complex" });
+
+/**
+ * Un tipo de sala puede tener muchas salas (relación uno a muchos).
+ */
+RoomType.hasMany(Room, { foreignKey: "roomTypeId", as: "rooms" });
+
+/**
+ * Una sala pertenece a un único tipo de sala (relación muchos a uno).
+ */
+Room.belongsTo(RoomType, { foreignKey: "roomTypeId", as: "roomType" });
+
+/**
  * Un usuario pertenece a una única ciudad (relación muchos a uno).
  */
 User.belongsTo(City, { foreignKey: "cityId", as: "city" });
@@ -68,4 +102,7 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
-export { Country, Department, City, Role, DocumentType, User, Genre };
+export { CinemaComplex };
+export { Country, Department, City, Role, DocumentType, User, Genre, Format };
+export { RoomType };
+export { Room };
