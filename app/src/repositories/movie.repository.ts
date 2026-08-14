@@ -1,12 +1,14 @@
 // app/src/repositories/movie.repository.ts
 
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
+import { Op } from "sequelize";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
 import { IMovieRepository } from "./interfaces/movie.repository.interface";
 import Showtime from "../models/showtime.model";
 import Format from "../models/format.model";
-import { Op } from "sequelize";
 
+
+import Genre from "../models/genre.model";
 
 /**
  * Repositorio de Películas
@@ -123,8 +125,10 @@ class MovieRepository implements IMovieRepository {
     /**
      * Crea una nueva película.
      */
-    async create(data: MovieCreationAttributes): Promise<Movie> {
-        return await Movie.create(data);
+    async create(data: MovieCreationAttributes, genreIds: number[]): Promise<Movie> {
+        const movie = await Movie.create(data);
+        await (movie as any).setGenres(genreIds);
+        return movie;
     }
 
     /**
@@ -132,15 +136,33 @@ class MovieRepository implements IMovieRepository {
      */
     async findAll(): Promise<Movie[]> {
         return await Movie.findAll({
-            subQuery: false,
-            include: [
-                {
-                    model: Showtime,
-                    as: "showtimes",
-                    where: { isActive: true },
-                    required: false,
-                }
-            ]
+            // subQuery: false,
+            // include: [
+            //     {
+            //         model: Showtime,
+            //         as: "showtimes",
+            //         where: { isActive: true },
+            //         required: false,
+            //     }
+            // ]
+            // tiempo de las movies agregar 
+            include: [{
+                model: Genre,
+                as: 'genres',
+                attributes: ['name', 'id'],
+                through: { attributes: [] },
+            }]
+        });
+    }
+
+    async findById(id: number): Promise<Movie | null> {
+        return await Movie.findByPk(id, {
+            include: [{
+                model: Genre,
+                as: 'genres',
+                attributes: ['name','id'],
+                through: { attributes: [] },
+            }]
         });
     }
 
@@ -148,9 +170,42 @@ class MovieRepository implements IMovieRepository {
      * Busca una película por su título.
      */
     async findByTitle(title: string): Promise<Movie | null> {
-        return await Movie.findOne({ where: { title } });
+        return await Movie.findOne({ 
+            where: { title },
+            include: [{
+                model: Genre,
+                    as: 'genres',
+                    attributes: ['name'],
+                    through: { attributes: [] },
+                }
+            ]
+        });
     }
 
+    async findFunctionsByMovieId(movieId: number): Promise<Showtime[]> {
+        return await Showtime.findAll({ 
+            where: { movieId }
+        });
+    }
+
+    async findRecommendedMovies(id: number, genreIds: number[]): Promise<Movie[]> {
+        return await Movie.findAll({
+            where: {
+                id: { [Op.ne]: id },
+            },
+            include: [
+                {
+                    model: Genre,
+                    as: 'genres',
+                    attributes: ['name'],
+                    through: { attributes: [] },
+                    where: {
+                        id: { [Op.in]: genreIds }
+                    }
+                }
+            ]
+        });
+    }
 }
 
 export default new MovieRepository();

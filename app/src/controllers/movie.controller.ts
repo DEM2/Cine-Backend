@@ -341,3 +341,67 @@ export const getMoviesByFilters = async (req: Request, res: Response): Promise<R
 
 };
 
+/**
+ * Obtiene el detalle de una película por id.
+ * Stub temporal: la lógica (repository/service) se implementa después.
+ */
+export const getMovieById = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const movieId = Number(_req.params.id)
+        const movie = await movieService.findById(movieId);
+        if (!movie) {
+            return res.status(404).json({
+                message: "Película no encontrada",
+            });
+        }
+        return res.status(200).json(movie);
+    } catch (error: any) {
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+}
+
+/**
+ * Obtiene las funciones futuras de una película.
+ * Stub temporal: la lógica se implementa después.
+ */
+export const getMovieFunctions = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const movieId = Number(_req.params.id)
+        const functions = await movieService.findFunctions(movieId);
+        return res.status(200).json(functions);
+    } catch (error: any) {
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+};
+
+export const getRecommendedMovies = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const movieId = Number(_req.params.id)
+        const recommendedMovies = await movieService.findRecommendedMovies(movieId);
+        return res.status(200).json(recommendedMovies);
+    } catch (error: any) {
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+        return res.status(500).json({
+            error: error.message
+        });
+    }
+};
+

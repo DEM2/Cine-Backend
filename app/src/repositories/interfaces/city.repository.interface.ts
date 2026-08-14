@@ -1,6 +1,6 @@
 // app/src/repositories/interfaces/city.repository.interface.ts
 
-import City from "../../models/city.model";
+import City from "../../models/geo_locations/city.model";
 
 export interface ICityRepository {
 
@@ -10,5 +10,13 @@ export interface ICityRepository {
      * @param departmentId - Identificador del departamento.
      */
     findByDepartmentId(departmentId: number): Promise<City[]>;
+
+
+    /**
+     * Obtiene una ciudad por su identificador.
+     *
+     * @param id - Identificador de la ciudad.
+     */
+    findById(id: number): Promise<City | null>;
 
 }

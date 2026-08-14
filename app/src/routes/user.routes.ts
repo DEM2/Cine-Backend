@@ -13,25 +13,32 @@
  */
 
 import { Router } from "express";
-import { auth, createUser, getUsers } from "../controllers/user.controller";
+import { createUser, getUsers } from "../controllers/user.controller";
 
 const router = Router();
-
 
 /**
  * POST /
  * -----
- * Crea un nuevo usuario en la base de datos.
+ * Crea un nuevo usuario en la base de datos con su perfil completo.
  * 
  * Request Body:
- *  - `name`: string (obligatorio)
  *  - `email`: string (obligatorio, único)
  *  - `password`: string (obligatorio)
+ *  - `document_type_id`: integer (obligatorio)
+ *  - `document_number`: string (obligatorio)
+ *  - `first_name`: string (obligatorio)
+ *  - `last_name`: string (obligatorio)
+ *  - `birth_date`: string (obligatorio, formato YYYY-MM-DD)
+ *  - `gender`: string (obligatorio)
+ *  - `phone`: string (obligatorio)
+ *  - `address`: string (obligatorio)
+ *  - `city_id`: integer (obligatorio)
  * 
  * Response:
  *  - 201 Created: Retorna el usuario creado en formato JSON.
+ *  - 400 Bad Request: Si faltan datos obligatorios o el correo ya existe.
  *  - 500 Internal Server Error: En caso de error en la creación.
- * 
  * 
  * @swagger
  * /api/users:
@@ -45,43 +52,85 @@ const router = Router();
  *           schema:
  *             type: object
  *             required:
- *               - name
  *               - email
  *               - password
+ *               - document_type_id
+ *               - document_number
+ *               - first_name
+ *               - last_name
+ *               - birth_date
+ *               - gender
+ *               - phone
+ *               - address
+ *               - city_id
  *             properties:
- *               name:
- *                 type: string
- *                 example: "John Doe"
  *               email:
  *                 type: string
- *                 example: "john.doe@example.com"
- *               password: 
+ *                 example: "daniel@gmail.com"
+ *               password:
  *                 type: string
- *                 example: "123"
+ *                 example: "123456"
+ *               document_type_id:
+ *                 type: integer
+ *                 example: 1
+ *               document_number:
+ *                 type: string
+ *                 example: "1045678901"
+ *               first_name:
+ *                 type: string
+ *                 example: "Daniel"
+ *               last_name:
+ *                 type: string
+ *                 example: "Mendoza"
+ *               birth_date:
+ *                 type: string
+ *                 format: date
+ *                 example: "2002-05-15"
+ *               gender:
+ *                 type: string
+ *                 example: "Masculino"
+ *               phone:
+ *                 type: string
+ *                 example: "3001234567"
+ *               address:
+ *                 type: string
+ *                 example: "Calle 123"
+ *               city_id:
+ *                 type: integer
+ *                 example: 1
  *     responses:
  *       201:
  *         description: Usuario creado exitosamente
  *         content:
  *           application/json:
- *             example:
+ *             example: 
  *               id: 3
- *               name: "John Doe"
- *               email: "john.doe@example.com"
- *               password: "123"
+ *               email: "daniel@gmail.com"
+ *               password: "123456"
+ *               document_type_id: 1
+ *               document_number: "1045678901"
+ *               first_name: "Daniel"
+ *               last_name: "Mendoza"
+ *               birth_date: "2002-05-15"
+ *               gender: "Masculino"
+ *               phone: "3001234567"
+ *               address: "Calle 123"
+ *               city_id: 1
  *       400:
- *         description: Datos inválidos
+ *         description: Datos inválidos o correo duplicado
  *         content:
  *           application/json:
- *             example:
+ *             example: 
  *               error: "El correo ya existe"
  *       500:
  *         description: Error interno del servidor
  *         content:
  *           application/json:
- *             example:
+ *             example: 
  *               error: "No se pudo crear el usuario"
  */
 router.post("/", createUser);
+
 
 /**
  * GET /
@@ -102,7 +151,7 @@ router.post("/", createUser);
  *         description: Lista de usuarios obtenida exitosamente
  *         content:
  *           application/json:
- *             example:
+ *             example: 
  *               - id: 1
  *                 name: "John Doe"
  *                 email: "john.doe@example.com"
@@ -113,73 +162,15 @@ router.post("/", createUser);
  *         description: Solicitud inválida
  *         content:
  *           application/json:
- *             example:
+ *             example: 
  *               error: "Parámetros incorrectos"
  *       500:
  *         description: Error interno del servidor
  *         content:
  *           application/json:
- *             example:
+ *             example: 
  *               error: "Error al obtener los usuarios"
  */
 router.get("/", getUsers);
 
-
-/**
- * POST /
- * -----
- * Autenticacion
- * 
- * Request Body:
- *  - `email`: string (obligatorio, único)
- *  - `password`: string (obligatorio)
- * 
- * Response:
- *  - 200 successfully: Retorna el usuario autenticado en formato JSON.
- *  - 500 Internal Server Error: En caso de error en la busqueda.
- * 
- * 
- * @swagger
- * /api/users/auth:
- *   post:
- *     summary: Autenticar
- *     tags: [Users]
- *     requestBody:
- *       required: true
- *       content:
- *         application/json:
- *           schema:
- *             type: object
- *             required:
- *               - email
- *               - password
- *             properties:
- *               email:
- *                 type: string
- *                 example: "john.doe@example.com"
- *               password: 
- *                 type: string
- *                 example: "123"
- *     responses:
- *       200:
- *         description: usuario autenticado
- *         content:
- *           application/json:
- *             example:
- *               id: 3
- *               name: "John Doe"
- *               email: "john.doe@example.com"
- *               password: "123"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             example:
- *               error: "No se pudo hacer la busqueda"
- */
-
-router.post("/auth", auth);
-
 export default router;
-
-

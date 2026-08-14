@@ -9,10 +9,11 @@ import { MovieFilterDto } from "../../dto/movie/movie-filter.dto";
  */
 
 export interface IMovieService {
-
+    
     create(dto: CreateMovieDto): Promise<movie>;
 
     findAll(): Promise<movie[]>;
+<<<<<<< HEAD
 
     /**
      * Películas con funciones activas para la fecha de hoy.
@@ -29,4 +30,6 @@ export interface IMovieService {
      */
     getFiltered(filters: MovieFilterDto): Promise<movie[]>;
 
+=======
+>>>>>>> develop
 }

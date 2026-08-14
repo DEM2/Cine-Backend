@@ -1,6 +1,6 @@
 // app/src/repositories/interfaces/department.repository.interface.ts
 
-import Department from "../../models/department.model";
+import Department from "../../models/geo_locations/department.model";
 
 /**
  * Contrato del Repositorio de Departamentos

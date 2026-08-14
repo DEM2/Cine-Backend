@@ -14,9 +14,9 @@ import { MovieFilterDto } from "../../dto/movie/movie-filter.dto";
 export interface IMovieRepository {
 
     /**
-     * Crea una película.
+     * Crea una película y asocia sus géneros (N:M).
      */
-    create(data: MovieCreationAttributes): Promise<Movie>;
+    create(data: MovieCreationAttributes, genreIds: number[]): Promise<Movie>;
 
     /**
      * Obtiene todas las películas.

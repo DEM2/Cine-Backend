@@ -4,9 +4,9 @@ import { CreateMovieDto } from "../dto/movie/create-movie.dto";
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import repository from "../repositories/movie.repository";
 import AppError from "../error/appError";
-import Movie from "../models/movie.model";
+import Movie, { MovieCreationAttributes } from "../models/movie.model";
+import { IMovieService } from "../services/interfaces/movie.service.interface"
 import Showtime from "../models/showtime.model";
-import { IMovieService } from "../services/interfaces/movie.service.interface";
 
 /**
  * Servicio de Movie
@@ -17,6 +17,7 @@ import { IMovieService } from "../services/interfaces/movie.service.interface";
  *  - Validar reglas de negocio.
  *  - Coordinar operaciones entre el controlador y el repositorio.
  *  - Mantener al controlador libre de lógica de negocio.
+ * 
  */
 
 /**
@@ -25,12 +26,17 @@ import { IMovieService } from "../services/interfaces/movie.service.interface";
 const formatISODate = (date: Date): string =>
     `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, "0")}-${String(date.getDate()).padStart(2, "0")}`;
 
+// class MovieService implements IMovieService {
+//     findById(movieId: number) {
+//         throw new Error("Method not implemented.");
+//     }
 class MovieService implements IMovieService {
-    findById(movieId: number) {
-        throw new Error("Method not implemented.");
-    }
 
     async create(dto: CreateMovieDto): Promise<Movie> {
+
+        if (!dto.genres || dto.genres.length === 0) {
+            throw new AppError(400, "Debes asignar al menos un género a la película.");
+        }
 
         // Verificar si ya existe una película con el mismo título
         const existingMovie = await repository.findByTitle(dto.title);
@@ -40,30 +46,32 @@ class MovieService implements IMovieService {
         }
 
         // Crear la película
-        const movie = await repository.create(dto as Movie);
+        //const movie = await repository.create(dto as Movie);
 
         // Crear showtimes si se proporcionaron en el DTO
-        if (dto.showtimes && Array.isArray(dto.showtimes) && dto.showtimes.length > 0) {
-            try {
-                for (const showtimeData of dto.showtimes) {
-                    await Showtime.create({
-                        movieId: movie.id,
-                        date: showtimeData.date,
-                        time: showtimeData.time,
-                        formatId: showtimeData.formatId,
-                        complex: showtimeData.complex,
-                        isActive: showtimeData.isActive ?? true,
-                        isSoldOut: showtimeData.isSoldOut ?? false,
-                    });
-                }
-            } catch (error: any) {
-                // Si falla la creación de showtimes, eliminar la película creada
-                await Movie.destroy({ where: { id: movie.id } });
-                throw new AppError(400, `Error al crear los horarios: ${error.message}`);
-            }
-        }
+        // if (dto.showtimes && Array.isArray(dto.showtimes) && dto.showtimes.length > 0) {
+        //     try {
+        //         for (const showtimeData of dto.showtimes) {
+        //             await Showtime.create({
+        //                 movieId: movie.id,
+        //                 date: showtimeData.date,
+        //                 time: showtimeData.time,
+        //                 formatId: showtimeData.formatId,
+        //                 complex: showtimeData.complex,
+        //                 isActive: showtimeData.isActive ?? true,
+        //                 isSoldOut: showtimeData.isSoldOut ?? false,
+        //             });
+        //         }
+        //     } catch (error: any) {
+        //         // Si falla la creación de showtimes, eliminar la película creada
+        //         await Movie.destroy({ where: { id: movie.id } });
+        //         throw new AppError(400, `Error al crear los horarios: ${error.message}`);
+        //     }
+        // }
 
-        return movie;
+        
+        const { genres, ...movieData } = dto;
+        return await repository.create(movieData as MovieCreationAttributes, genres);
     }
 
     async findAll(): Promise<Movie[]> {
@@ -84,6 +92,37 @@ class MovieService implements IMovieService {
 
     async getFiltered(filters: MovieFilterDto): Promise<Movie[]> {
         return await repository.findFiltered(filters);
+    }
+    
+    async findById(id: number): Promise<Movie> {
+        const movie = await repository.findById(id);
+
+        if (!movie) {
+            throw new AppError(404, "La película no encontrada.");
+        }
+
+        return movie;
+    }
+
+    async findFunctions(movieId: number): Promise<Showtime[]> {
+        await this.findById(movieId);
+        const showtimes = await repository.findFunctionsByMovieId(movieId);
+        if (!showtimes) {
+            throw new AppError(404, "No se encontraron funciones para la película.");
+        }
+        return showtimes;
+    }
+
+    async findRecommendedMovies(id: number): Promise<Movie[]> {
+        const movie = await this.findById(id) ;
+
+        const genres = (movie as any).genres as {id: number}[] | undefined;
+        const genreIds = genres?.map(genre => genre.id) ?? [];
+
+        if (genreIds.length === 0) {
+            throw new AppError(400, "La película no tiene géneros asignados.");
+        }
+        return await repository.findRecommendedMovies(movie.id, genreIds);
     }
 }
 
