@@ -60,8 +60,8 @@ export default {
           base_price: 18000,
           available_seats: 150,
           is_active: true,
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         {
           movie_id: m0,
@@ -74,8 +74,8 @@ export default {
           base_price: 25000,
           available_seats: 120,
           is_active: true,
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         {
           movie_id: m0,
@@ -88,8 +88,8 @@ export default {
           base_price: 35000,
           available_seats: dayOffset < 2 ? 50 : 100,
           is_active: true,
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         {
           movie_id: m1,
@@ -102,8 +102,8 @@ export default {
           base_price: 18000,
           available_seats: 120,
           is_active: true,
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         },
         {
           movie_id: m1,
@@ -116,8 +116,8 @@ export default {
           base_price: 40000,
           available_seats: 80,
           is_active: true,
-          created_at: new Date(),
-          updated_at: new Date(),
+          createdAt: new Date(),
+          updatedAt: new Date(),
         }
       );
     }
@@ -134,4 +134,3 @@ export default {
     );
   },
 };
- 
