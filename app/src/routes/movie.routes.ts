@@ -28,16 +28,17 @@ const router = Router();
  * Crea una nueva película en la base de datos.
  *
  * Request Body: objeto con los atributos de `CreateMovieDto`.
+ * Nota: Los showtimes se crean separadamente en la tabla showtimes.
  *
  * Response:
- *  - 201 Created: Retorna la película creada en formato JSON.
- *  - 400 Bad Request: Datos inválidos o película ya registrada.
+ *  - 201 Created: Retorna la película creada en formato JSON con sus géneros.
+ *  - 400 Bad Request: Datos inválidos, sin géneros, o película ya registrada.
  *  - 500 Internal Server Error: Error inesperado durante la creación.
  *
  * @swagger
  * /api/movies:
  *   post:
- *     summary: Create a new movie
+ *     summary: Crear una nueva película
  *     tags: [Movies]
  *     requestBody:
  *       required: true
@@ -58,86 +59,83 @@ const router = Router();
  *             properties:
  *               title:
  *                 type: string
+ *                 description: Título de la película
  *                 example: "Inception"
  *               original_title:
  *                 type: string
+ *                 description: Título original
  *                 example: "Inception"
  *               synopsis:
  *                 type: string
+ *                 description: Sinopsis completa
  *                 example: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
  *               director:
  *                 type: string
+ *                 description: Director de la película
  *                 example: "Christopher Nolan"
  *               duration_minutes:
- *                 type: number
+ *                 type: integer
+ *                 description: Duración en minutos
  *                 example: 148
  *               genres:
  *                 type: array
- *                 description: IDs de géneros existentes (tabla genres). Al menos uno es obligatorio.
- *                 items:
- *                   type: number
+ *                 description: IDs de géneros existentes. Al menos uno es obligatorio.
  *                 minItems: 1
+ *                 items:
+ *                   type: integer
  *                 example: [1, 6]
  *               rating:
  *                 type: string
+ *                 description: Clasificación de la película
  *                 example: "PG-13"
  *               language:
  *                 type: string
+ *                 description: Idioma original
  *                 example: "Inglés"
  *               dubbed:
  *                 type: boolean
+ *                 description: Disponible doblada
  *                 example: true
  *               subtitled:
  *                 type: boolean
+ *                 description: Disponible subtitulada
  *                 example: true
  *               poster:
  *                 type: string
+ *                 description: URL del póster oficial
  *                 example: "https://image.tmdb.org/t/p/original/poster.jpg"
  *               premiere:
  *                 type: boolean
+ *                 description: Es un estreno
  *                 example: false
  *               audience_rating:
  *                 type: number
+ *                 description: Calificación del público
  *                 example: 4.8
- *               showtimes:
- *                 type: array
- *                 description: (Opcional) Horarios de función para la película
- *                 items:
- *                   type: object
- *                   required:
- *                     - date
- *                     - time
- *                     - formatId
- *                     - complex
- *                   properties:
- *                     date:
- *                       type: string
- *                       example: "2026-08-20"
- *                     time:
- *                       type: string
- *                       example: "14:30"
- *                     formatId:
- *                       type: number
- *                       example: 1
- *                     complex:
- *                       type: string
- *                       example: "Cinemark La Aurora"
- *                     isActive:
- *                       type: boolean
- *                       example: true
- *                     isSoldOut:
- *                       type: boolean
- *                       example: false
  *     responses:
  *       201:
- *         description: Movie created successfully
+ *         description: Película creada exitosamente
  *         content:
  *           application/json:
  *             example:
- *               id: 3
+ *               id: 1
  *               title: "Inception"
+ *               original_title: "Inception"
+ *               synopsis: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
  *               director: "Christopher Nolan"
  *               duration_minutes: 148
+ *               rating: "PG-13"
+ *               language: "Inglés"
+ *               dubbed: true
+ *               subtitled: true
+ *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
+ *               premiere: false
+ *               audience_rating: 4.8
+ *               genres:
+ *                 - id: 1
+ *                   name: "Acción"
+ *                 - id: 6
+ *                   name: "Ciencia ficción"
  *       400:
  *         description: Datos inválidos, sin géneros, o película ya registrada
  *         content:
@@ -285,68 +283,6 @@ router.get("/filtres", getMoviesByFilters);
 router.get("/", getMovies);
 
 /**
- * GET /api/movies/{id}
- * --------------------
- * Obtiene el detalle completo de una película por su identificador.
- *
- * Response:
- *  - 200 OK: Retorna el detalle de la película en formato JSON.
- *  - 404 Not Found: La película no existe.
- *  - 500 Internal Server Error: Error inesperado durante la consulta.
- *
- * @swagger
- * /api/movies/{id}:
- *   get:
- *     summary: Obtener el detalle de una película
- *     tags: [Movies]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Identificador de la película
- *         schema:
- *           type: integer
- *           example: 1
- *     responses:
- *       200:
- *         description: Detalle de la película obtenido exitosamente
- *         content:
- *           application/json:
- *             example:
- *               id: 1
- *               title: "Inception"
- *               original_title: "Inception"
- *               synopsis: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
- *               director: "Christopher Nolan"
- *               duration_minutes: 148
- *               rating: "PG-13"
- *               language: "Inglés"
- *               dubbed: true
- *               subtitled: true
- *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
- *               premiere: false
- *               audience_rating: 4.8
- *               genres:
- *                 - id: 1
- *                   name: "Acción"
- *                 - id: 6
- *                   name: "Ciencia ficción"
- *       404:
- *         description: La película no existe
- *         content:
- *           application/json:
- *             example:
- *               message: "Película no encontrada"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             example:
- *               error: "Error al obtener el detalle de la película"
- */
-router.get("/:id", getMovieById);
-
-/**
  * GET /api/movies/{id}/functions
  * ------------------------------
  * Obtiene las funciones disponibles de una película
@@ -413,7 +349,6 @@ router.get("/:id", getMovieById);
  *               error: "Error al obtener las funciones de la película"
  */
 router.get("/:id/functions", getMovieFunctions);
-
 
 /**
  * GET /api/movies/{id}/recommendations
@@ -493,6 +428,68 @@ router.get("/:id/functions", getMovieFunctions);
  *               error: "Error al obtener las películas recomendadas"
  */
 router.get("/:id/recommendations", getRecommendedMovies);
+
+/**
+ * GET /api/movies/{id}
+ * --------------------
+ * Obtiene el detalle completo de una película por su identificador.
+ *
+ * Response:
+ *  - 200 OK: Retorna el detalle de la película en formato JSON.
+ *  - 404 Not Found: La película no existe.
+ *  - 500 Internal Server Error: Error inesperado durante la consulta.
+ *
+ * @swagger
+ * /api/movies/{id}:
+ *   get:
+ *     summary: Obtener el detalle de una película
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Identificador de la película
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Detalle de la película obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               id: 1
+ *               title: "Inception"
+ *               original_title: "Inception"
+ *               synopsis: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
+ *               director: "Christopher Nolan"
+ *               duration_minutes: 148
+ *               rating: "PG-13"
+ *               language: "Inglés"
+ *               dubbed: true
+ *               subtitled: true
+ *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
+ *               premiere: false
+ *               audience_rating: 4.8
+ *               genres:
+ *                 - id: 1
+ *                   name: "Acción"
+ *                 - id: 6
+ *                   name: "Ciencia ficción"
+ *       404:
+ *         description: La película no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Película no encontrada"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Error al obtener el detalle de la película"
+ */
+router.get("/:id", getMovieById);
 
 export default router;
 

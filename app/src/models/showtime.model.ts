@@ -54,8 +54,8 @@ class Showtime
 Showtime.init(
   {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true,
     },
     movieId: {
@@ -118,8 +118,7 @@ Showtime.init(
     modelName: "Showtime",
     tableName: "showtimes",
     timestamps: true,
-    updatedAt: false,
-    createdAt: "created_at",
+
   }
   
 );

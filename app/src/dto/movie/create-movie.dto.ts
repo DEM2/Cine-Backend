@@ -111,6 +111,31 @@ export interface CreateMovieDto {
     audience_rating: number;
 
     /**
+     * (Opcional) URL del banner promocional.
+     */
+    banner_url?: string;
+
+    /**
+     * URL del trailer (requerido).
+     */
+    trailer_url: string;
+
+    /**
+     * Fecha de estreno (YYYY-MM-DD) (requerido).
+     */
+    release_date: string;
+
+    /**
+     * Indica si la película ya está en release.
+     */
+    is_release?: boolean;
+
+    /**
+     * Estado de la película (p.ej. ACTIVE, INACTIVE, UPCOMING).
+     */
+    status?: string;
+
+    /**
      * (Opcional) Horarios de función asociados a la película.
      * Si se proporciona, se crearán automáticamente al crear la película.
      * 

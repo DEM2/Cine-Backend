@@ -25,6 +25,9 @@ class MovieRepository implements IMovieRepository {
      * Obtiene las películas con funciones activas en una fecha específica.
      */
     async findToday(date: string): Promise<Movie[]> {
+        const startOfDay = new Date(`${date}T00:00:00Z`);
+        const endOfDay = new Date(`${date}T23:59:59Z`);
+        
         return await Movie.findAll({
             subQuery: false,
             include: [
@@ -33,7 +36,9 @@ class MovieRepository implements IMovieRepository {
                     as: "showtimes",
                     where: { 
                         isActive: true,
-                        date: date
+                        startTime: {
+                            [Op.between]: [startOfDay, endOfDay]
+                        }
                     },
                     required: true,
                 }
@@ -45,6 +50,9 @@ class MovieRepository implements IMovieRepository {
      * Obtiene las películas con funciones activas en un rango de fechas.
      */
     async findWeekly(startDate: string, endDate: string): Promise<Movie[]> {
+        const startDateTime = new Date(`${startDate}T00:00:00Z`);
+        const endDateTime = new Date(`${endDate}T23:59:59Z`);
+        
         return await Movie.findAll({
             subQuery: false,
             include: [
@@ -53,8 +61,8 @@ class MovieRepository implements IMovieRepository {
                     as: "showtimes",
                     where: { 
                         isActive: true,
-                        date: {
-                            [Op.between]: [startDate, endDate]
+                        startTime: {
+                            [Op.between]: [startDateTime, endDateTime]
                         }
                     },
                     required: true,
@@ -89,7 +97,9 @@ class MovieRepository implements IMovieRepository {
 
         // Filtros de función
         if (filters.date) {
-            showtimeWhere.date = filters.date;
+            const startOfDay = new Date(`${filters.date}T00:00:00Z`);
+            const endOfDay = new Date(`${filters.date}T23:59:59Z`);
+            showtimeWhere.startTime = { [Op.between]: [startOfDay, endOfDay] };
         }
         if (filters.formatId) {
             showtimeWhere.formatId = filters.formatId;
