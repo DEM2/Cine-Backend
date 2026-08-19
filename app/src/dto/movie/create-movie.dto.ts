@@ -155,4 +155,13 @@ export interface CreateMovieDto {
         isSoldOut?: boolean;       // Por defecto: false
     }>;
 
+    /**
+     * (Opcional) Reparto de la película (actores).
+     * Si se proporciona, se crearán automáticamente al crear la película.
+     */
+    cast?: Array<{
+        actorName: string;         // Nombre del actor (requerido)
+        roleName?: string;         // Nombre del personaje (opcional)
+    }>;
+
 }

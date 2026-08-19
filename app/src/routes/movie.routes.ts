@@ -56,6 +56,8 @@ const router = Router();
  *               - rating
  *               - language
  *               - poster
+ *               - trailer_url
+ *               - release_date
  *             properties:
  *               title:
  *                 type: string
@@ -112,6 +114,41 @@ const router = Router();
  *                 type: number
  *                 description: Calificación del público
  *                 example: 4.8
+ *               trailer_url:
+ *                 type: string
+ *                 description: URL del trailer (requerido)
+ *                 example: "https://www.youtube.com/embed/YoHD9XEInc0"
+ *               release_date:
+ *                 type: string
+ *                 format: date
+ *                 description: Fecha de estreno (YYYY-MM-DD) (requerido)
+ *                 example: "2026-08-19"
+ *               banner_url:
+ *                 type: string
+ *                 description: URL del banner promocional (opcional)
+ *                 example: "https://image.tmdb.org/t/p/original/banner.jpg"
+ *               is_release:
+ *                 type: boolean
+ *                 description: Indica si la película ya está en release
+ *                 example: false
+ *               status:
+ *                 type: string
+ *                 description: Estado de la película (ACTIVE, INACTIVE, UPCOMING)
+ *                 example: "ACTIVE"
+ *               cast:
+ *                 type: array
+ *                 description: Reparto de la película (opcional). Se crea automáticamente.
+ *                 items:
+ *                   type: object
+ *                   properties:
+ *                     actorName:
+ *                       type: string
+ *                       description: Nombre del actor (requerido)
+ *                       example: "Leonardo DiCaprio"
+ *                     roleName:
+ *                       type: string
+ *                       description: Nombre del personaje (opcional)
+ *                       example: "Dom Cobb"
  *     responses:
  *       201:
  *         description: Película creada exitosamente
@@ -131,11 +168,19 @@ const router = Router();
  *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
  *               premiere: false
  *               audience_rating: 4.8
+ *               trailer_url: "https://www.youtube.com/embed/YoHD9XEInc0"
+ *               release_date: "2026-08-19"
+ *               is_release: false
+ *               status: "ACTIVE"
  *               genres:
  *                 - id: 1
  *                   name: "Acción"
  *                 - id: 6
  *                   name: "Ciencia ficción"
+ *               cast:
+ *                 - id: 1
+ *                   actorName: "Leonardo DiCaprio"
+ *                   roleName: "Dom Cobb"
  *       400:
  *         description: Datos inválidos, sin géneros, o película ya registrada
  *         content:

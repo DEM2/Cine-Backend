@@ -9,6 +9,7 @@ import Format from "../models/format.model";
 
 
 import Genre from "../models/genre.model";
+import MovieCast from "../models/movie-cast.model";
 
 /**
  * Repositorio de Películas
@@ -161,6 +162,11 @@ class MovieRepository implements IMovieRepository {
                 as: 'genres',
                 attributes: ['name', 'id'],
                 through: { attributes: [] },
+            },
+            {
+                model: MovieCast,
+                as: 'cast',
+                attributes: ['id', 'actorName', 'roleName'],
             }]
         });
     }
@@ -172,6 +178,11 @@ class MovieRepository implements IMovieRepository {
                 as: 'genres',
                 attributes: ['name','id'],
                 through: { attributes: [] },
+            },
+            {
+                model: MovieCast,
+                as: 'cast',
+                attributes: ['id', 'actorName', 'roleName'],
             }]
         });
     }

@@ -5,6 +5,7 @@ import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import repository from "../repositories/movie.repository";
 import AppError from "../error/appError";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
+import MovieCast from "../models/movie-cast.model";
 import { IMovieService } from "../services/interfaces/movie.service.interface"
 import Showtime from "../models/showtime.model";
 
@@ -70,8 +71,29 @@ class MovieService implements IMovieService {
         // }
 
         
-        const { genres, ...movieData } = dto;
-        return await repository.create(movieData as MovieCreationAttributes, genres);
+        const { genres, cast, ...movieData } = dto;
+
+        const payload: MovieCreationAttributes = {
+            ...movieData,
+            release_date: new Date(movieData.release_date),
+            is_release: movieData.is_release ?? false,
+            status: movieData.status ?? "ACTIVE",
+        };
+
+        const movie = await repository.create(payload, genres);
+
+        // Crear el reparto (actores) si se proporcionó en el DTO
+        if (cast && Array.isArray(cast) && cast.length > 0) {
+            await MovieCast.bulkCreate(
+                cast.map((member) => ({
+                    movieId: movie.id,
+                    actorName: member.actorName,
+                    roleName: member.roleName ?? null,
+                }))
+            );
+        }
+
+        return movie;
     }
 
     async findAll(): Promise<Movie[]> {
