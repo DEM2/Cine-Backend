@@ -68,14 +68,6 @@ class Seat
 
 /**
  * Inicialización del modelo `Seat` con la configuración de Sequelize.
- *
- * - `id`: Entero autoincremental, clave primaria.
- * - `roomId`: Clave foránea obligatoria que referencia la tabla `rooms`.
- * - `seatTypeId`: Clave foránea obligatoria que referencia la tabla `seat_types`.
- * - `rowLabel`: Etiqueta de fila obligatoria con máximo 5 caracteres.
- * - `seatNumber`: Número de silla obligatorio dentro de la fila.
- * - `code`: Código legible obligatorio con máximo 10 caracteres.
- * - `isEnabled`: Booleano obligatorio con valor por defecto `true`.
  */
 Seat.init(
   {
