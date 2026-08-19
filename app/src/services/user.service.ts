@@ -3,8 +3,10 @@
 import User from "../models/user.model";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UserResponseDto } from "../dto/user-response.dto";
+import { SetUserLocationDto } from "../dto/set-user-location.dto";
 import repository from "../repositories/user.repository";
 import cityRepository from "../repositories/city.repository";
+import cinemaComplexRepository from "../repositories/cinema.complex.repository";
 import documentTypeRepository from "../repositories/document-type.repository";
 import roleRepository from "../repositories/role.repository";
 import { IUserService } from "./interfaces/user.service.interface";
@@ -93,6 +95,29 @@ class UserService implements IUserService {
 
     async findAll(): Promise<User[]> {
         return await repository.findAll();
+    }
+
+    /**
+     * Valida la ubicación seleccionada
+     *
+     */
+    async setLocation(dto: SetUserLocationDto): Promise<{ message: string }> {
+
+        const city = await cityRepository.findById(dto.city_id);
+        if (!city) {
+            throw new AppError(404, "Ciudad no encontrada");
+        }
+
+        if (!city.isActive) {
+            throw new AppError(400, "La ciudad seleccionada no está activa");
+        }
+
+        const complexes = await cinemaComplexRepository.findByCityId(dto.city_id);
+        if (complexes.length === 0) {
+            throw new AppError(400, "La ciudad no cuenta con complejos de cine activos");
+        }
+
+        return { message: "Ubicación guardada exitosamente" };
     }
 
 
