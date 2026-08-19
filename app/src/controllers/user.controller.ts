@@ -159,3 +159,79 @@ export const getUsers = async (_req: Request, res: Response): Promise<Response> 
     }
 
 };
+
+/**
+ * Guarda la ubicación geográfica seleccionada por el visitante (HU-002).
+ *
+ * Recibe el `city_id` enviado por el cliente, lo valida y delega la
+ * operación al servicio correspondiente.
+ *
+ * @async
+ *
+ * @param {Request} req
+ * Objeto de la petición HTTP.
+ *
+ * Espera recibir en el body:
+ * @example
+ * {
+ *   "city_id": 1
+ * }
+ *
+ * @param {Response} res
+ * Objeto utilizado para construir la respuesta HTTP.
+ *
+ * @returns {Promise<Response>}
+ * Promesa que resuelve una respuesta HTTP.
+ *
+ * Posibles respuestas:
+ *
+ * - **200 OK**
+ *   Ubicación validada y confirmada correctamente.
+ *
+ * - **400 Bad Request**
+ *   El `city_id` no es un entero válido, la ciudad está inactiva o
+ *   no cuenta con complejos de cine activos (RN-006).
+ *
+ * - **404 Not Found**
+ *   La ciudad no existe.
+ *
+ * - **500 Internal Server Error**
+ *   Error inesperado durante el procesamiento.
+ */
+export const setUserLocation = async (req: Request, res: Response): Promise<Response> => {
+
+    try {
+
+        const { city_id } = req.body;
+
+        if (city_id === undefined || city_id === null) {
+            return res.status(400).json({
+                error: "El campo city_id es obligatorio"
+            });
+        }
+
+        const cityId = Number(city_id);
+
+        if (!Number.isInteger(cityId)) {
+            return res.status(400).json({
+                error: "El campo city_id debe ser un número entero"
+            });
+        }
+
+        const result = await userService.setLocation({ city_id: cityId });
+
+        return res.status(200).json(result);
+
+    } catch (error: any) {
+
+        if (error instanceof AppError) {
+            return res.status(error.status).json({ message: error.message });
+        }
+
+        return res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+};
