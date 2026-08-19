@@ -13,7 +13,7 @@
  */
 
 import { Router } from "express";
-import { createUser, getUsers } from "../controllers/user.controller";
+import { createUser, getUsers, setUserLocation } from "../controllers/user.controller";
 
 const router = Router();
 
@@ -172,6 +172,70 @@ router.post("/", createUser);
  *               error: "Error al obtener los usuarios"
  */
 router.get("/", getUsers);
+
+/**
+ * POST /location
+ * --------------
+ * Valida y confirma la ubicación geográfica seleccionada por el visitante (HU-002).
+ *
+ * Request Body:
+ *  - `city_id`: integer (obligatorio)
+ *
+ * Validaciones:
+ *  - La ciudad debe existir.
+ *  - No se permiten ciudades inactivas.
+ *  - La ciudad debe contar con al menos un complejo de cine activo (RN-006).
+ *
+ * Response:
+ *  - 200 OK: Ubicación validada y confirmada.
+ *  - 400 Bad Request: `city_id` inválido, ciudad inactiva o sin complejos activos.
+ *  - 404 Not Found: La ciudad no existe.
+ *  - 500 Internal Server Error: En caso de error.
+ *
+ * @swagger
+ * /api/users/location:
+ *   post:
+ *     summary: Guardar la ubicación seleccionada por el visitante
+ *     tags: [Users]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - city_id
+ *             properties:
+ *               city_id:
+ *                 type: integer
+ *                 example: 1
+ *     responses:
+ *       200:
+ *         description: Ubicación guardada exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Ubicación guardada exitosamente"
+ *       400:
+ *         description: city_id inválido, ciudad inactiva o sin complejos de cine activos
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "La ciudad no cuenta con complejos de cine activos"
+ *       404:
+ *         description: La ciudad no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Ciudad no encontrada"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "No se pudo guardar la ubicación"
+ */
+router.post("/location", setUserLocation);
 
 export default router;
 
