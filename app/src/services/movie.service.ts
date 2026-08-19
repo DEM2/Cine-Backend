@@ -70,7 +70,7 @@ class MovieService implements IMovieService {
         //     }
         // }
 
-        
+
         const { genres, cast, ...movieData } = dto;
 
         const payload: MovieCreationAttributes = {
@@ -115,7 +115,7 @@ class MovieService implements IMovieService {
     async getFiltered(filters: MovieFilterDto): Promise<Movie[]> {
         return await repository.findFiltered(filters);
     }
-    
+
     async findById(id: number): Promise<Movie> {
         const movie = await repository.findById(id);
 
@@ -136,9 +136,9 @@ class MovieService implements IMovieService {
     }
 
     async findRecommendedMovies(id: number): Promise<Movie[]> {
-        const movie = await this.findById(id) ;
+        const movie = await this.findById(id);
 
-        const genres = (movie as any).genres as {id: number}[] | undefined;
+        const genres = (movie as any).genres as { id: number }[] | undefined;
         const genreIds = genres?.map(genre => genre.id) ?? [];
 
         if (genreIds.length === 0) {
@@ -146,6 +146,21 @@ class MovieService implements IMovieService {
         }
         return await repository.findRecommendedMovies(movie.id, genreIds);
     }
+
+    async getUpcoming(): Promise<Movie[]> {
+        return await repository.findUpcoming();
+    }
+
+    async getUpcomingById(id: number): Promise<Movie> {
+        const movie = await repository.findById(id);
+        if (!movie || movie.status !== "UPCOMING") {
+            throw new AppError(404, "La película no está próxima a estrenarse.");
+        }
+        return movie;
+    }
 }
+
+
+
 
 export default new MovieService();

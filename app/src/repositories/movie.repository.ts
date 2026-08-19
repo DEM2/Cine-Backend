@@ -1,7 +1,7 @@
 // app/src/repositories/movie.repository.ts
 
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
-import { Op } from "sequelize";
+import { cast, Op } from "sequelize";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
 import { IMovieRepository } from "./interfaces/movie.repository.interface";
 import Showtime from "../models/showtime.model";
@@ -10,6 +10,7 @@ import Format from "../models/format.model";
 
 import Genre from "../models/genre.model";
 import MovieCast from "../models/movie-cast.model";
+import { idText } from "typescript";
 
 /**
  * Repositorio de Películas
@@ -227,6 +228,18 @@ class MovieRepository implements IMovieRepository {
             ]
         });
     }
+
+async findUpcoming(): Promise<Movie[]> {
+    return await Movie.findAll({
+        where: { status: "UPCOMING" },
+        order: [["release_date", "ASC"]],
+        include: [
+            { model: Genre, as: 'genres', attributes: ['name', 'id'], through: { attributes: [] } },
+            { model: MovieCast, as: 'cast', attributes: ['id', 'actorName', 'roleName'] },
+        ]
+    });
+}
+
 }
 
 export default new MovieRepository();

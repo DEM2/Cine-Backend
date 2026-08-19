@@ -1,6 +1,7 @@
 
 import { Request, Response } from "express";
 import movieService from "../services/movie.service";
+
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import AppError from "../error/appError";
@@ -405,3 +406,23 @@ export const getRecommendedMovies = async (_req: Request, res: Response): Promis
     }
 };
 
+export const getUpcomingMovies = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const movies = await movieService.getUpcoming();
+        return res.status(200).json(movies);
+    } catch (error: any) {
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+export const getUpcomingMovieById = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const movieId = Number(req.params.id);
+        const movie = await movieService.getUpcomingById(movieId);
+        return res.status(200).json(movie);
+    } catch (error: any) {
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};
