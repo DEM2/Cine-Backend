@@ -25,6 +25,7 @@ import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
 import SeatType from "./complex/seat-type.model";
 import Seat from "./complex/seat.model";
+import CartSeat from "./reservations/cart-seat.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -148,6 +149,17 @@ User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 /**
  * Un showtime pertenece a un único movie (relación muchos a uno).
  */
+
+
+/**
+ * Una silla bloqueada en carrito pertenece a una única función (muchos a uno).
+ */
+CartSeat.belongsTo(Showtime, { foreignKey: "showtimeId", as: "showtime" });
+
+/**
+ * Una silla bloqueada en carrito pertenece a una única silla (muchos a uno).
+ */
+CartSeat.belongsTo(Seat, { foreignKey: "seatId", as: "seat" });
 
 
 Movie.belongsToMany(Genre, {
