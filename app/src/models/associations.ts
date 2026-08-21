@@ -19,6 +19,7 @@ import Movie from "./movie.model";
 import Showtime from "./showtime.model";
 import Genre from "./genre.model";
 import Format from "./format.model";
+import MovieCast from "./movie-cast.model";
 import CinemaComplex from "./complex/cinema.complex.model";
 import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
@@ -45,6 +46,19 @@ Department.hasMany(City, { foreignKey: "departmentId", as: "cities" });
  */
 City.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
 
+
+
+//relacion entre peliculas y funciones
+Movie.hasMany(Showtime, { foreignKey: "movieId", as: "showtimes" });
+Showtime.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+// relacion entre peliculas y su reparto (cast)
+Movie.hasMany(MovieCast, { foreignKey: "movieId", as: "cast" });
+MovieCast.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+// relacion entre funciones y formatos
+Showtime.belongsTo(Format, { foreignKey: "formatId", as: "format" });
+Format.hasMany(Showtime, { foreignKey: "formatId", as: "showtimes" });
 /**
  * Una ciudad puede tener muchos usuarios residentes en ella (relación uno a muchos).
  */
@@ -129,12 +143,12 @@ User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 /**
  * Un movie tiene muchos showtimes (relación uno a muchos).
  */
-Movie.hasMany(Showtime, { foreignKey: "movieId", as: "showtimes" });
+
 
 /**
  * Un showtime pertenece a un único movie (relación muchos a uno).
  */
-Showtime.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
 
 Movie.belongsToMany(Genre, {
     through: "movie_genres",
@@ -157,3 +171,4 @@ export { RoomType };
 export { Room };
 export { SeatType };
 export { Seat };
+export { MovieCast };
