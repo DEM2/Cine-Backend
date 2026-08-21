@@ -38,7 +38,7 @@ export default {
         premiere: false,
         audience_rating: 0,
         trailer_url: 'https://example.com/trailer2.mp4',
-        release_date: now.toISOString().slice(0,10),
+        release_date: '2026-10-01',
         is_release: false,
         status: 'ACTIVE',
         createdAt: now,
