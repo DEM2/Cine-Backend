@@ -1,8 +1,9 @@
 
 import { Request, Response } from "express";
-
 import movieService from "../services/movie.service";
+
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
+import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import AppError from "../error/appError";
 
 
@@ -219,6 +220,129 @@ export const getMovies = async (_req: Request, res: Response): Promise<Response>
 };
 
 /**
+ * Obtiene las películas con funciones activas para la fecha de hoy.
+ *
+ * No recibe parámetros; la fecha de hoy se calcula dentro del servicio.
+ *
+ * @async
+ * @param {Request} _req - Objeto de la petición HTTP (no utilizado).
+ * @param {Response} res - Objeto utilizado para construir la respuesta HTTP.
+ * @returns {Promise<Response>}
+ */
+export const getMoviesToday = async (_req: Request, res: Response): Promise<Response> => {
+
+    try {
+
+        const movies = await movieService.getToday();
+
+        return res.status(200).json(movies);
+
+    } catch (error: any) {
+
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+
+        return res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+};
+
+/**
+ * Obtiene las películas con funciones activas en los próximos 7 días.
+ *
+ * No recibe parámetros; el rango de fechas se calcula dentro del servicio.
+ *
+ * @async
+ * @param {Request} _req - Objeto de la petición HTTP (no utilizado).
+ * @param {Response} res - Objeto utilizado para construir la respuesta HTTP.
+ * @returns {Promise<Response>}
+ */
+export const getMoviesWeekly = async (_req: Request, res: Response): Promise<Response> => {
+
+    try {
+
+        const movies = await movieService.getWeekly();
+
+        return res.status(200).json(movies);
+
+    } catch (error: any) {
+
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+
+        return res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+};
+
+/**
+ * Obtiene las películas aplicando los filtros recibidos como query params.
+ *
+ * Parámetros aceptados (todos opcionales):
+ *  - `title`, `genre`, `rating`, `language`, `premiere` (filtros de película).
+ *  - `date` (YYYY-MM-DD), `formatId`, `complex`, `available` (filtros de función).
+ *
+ * @example
+ * GET /api/movies/filtres?genre=Acci%C3%B3n&language=Español&premiere=true
+ * GET /api/movies/filtres?date=2026-08-15&formatId=2
+ *
+ * @async
+ * @param {Request} req - Objeto de la petición HTTP (query params).
+ * @param {Response} res - Objeto utilizado para construir la respuesta HTTP.
+ * @returns {Promise<Response>}
+ */
+export const getMoviesByFilters = async (req: Request, res: Response): Promise<Response> => {
+
+    try {
+
+        const { title, date, genre, rating, language, complex, formatId, premiere, available } =
+            req.query as Record<string, string>;
+
+        const filters: MovieFilterDto = {
+            title,
+            date,
+            genre,
+            rating,
+            language,
+            complex,
+            formatId: formatId ? Number(formatId) : undefined,
+            premiere: premiere !== undefined ? premiere === "true" : undefined,
+            available: available !== undefined ? available === "true" : undefined
+        };
+
+        const movies = await movieService.getFiltered(filters);
+
+        return res.status(200).json(movies);
+
+    } catch (error: any) {
+
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                error: error.message
+            });
+        }
+
+        return res.status(500).json({
+            error: error.message
+        });
+
+    }
+
+};
+
+/**
  * Obtiene el detalle de una película por id.
  * Stub temporal: la lógica (repository/service) se implementa después.
  */
@@ -282,3 +406,23 @@ export const getRecommendedMovies = async (_req: Request, res: Response): Promis
     }
 };
 
+export const getUpcomingMovies = async (_req: Request, res: Response): Promise<Response> => {
+    try {
+        const movies = await movieService.getUpcoming();
+        return res.status(200).json(movies);
+    } catch (error: any) {
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+export const getUpcomingMovieById = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const movieId = Number(req.params.id);
+        const movie = await movieService.getUpcomingById(movieId);
+        return res.status(200).json(movie);
+    } catch (error: any) {
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};
