@@ -11,7 +11,7 @@
 import app from "./server";
 import sequelize from "./config/database";
 import "./models/associations";
-import { seedFormats } from "./seeds/format.seed";
+
 
 const PORT = process.env.APP_PORT || 3000;
 
@@ -24,8 +24,7 @@ const start = async () => {
       alter: true
     }); // crea tablas si no existen
 
-    // Inicializar datos por defecto
-    await seedFormats();
+
 
     app.listen(PORT, () => {
       console.log(`Servidor escuchando en puerto ${PORT}`);

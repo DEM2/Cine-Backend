@@ -11,12 +11,16 @@
  *  - `GET /api/movies/:id` : Obtener el detalle de una movie.
  *  - `GET /api/movies/:id/functions` : Obtener funciones futuras de una movie.
  *  - `GET /api/movies/:id/recommendations` : Obtener películas recomendadas por géneros.
+ *  - `POST /api/movies/notifications/upcoming` : Crear notificación para una película próxima.
+ *  - `GET /api/movies/notifications/upcoming` : Obtener notificaciones para películas próximas.
+ *  - `GET /api/movies/notifications/upcoming/:id` : Obtener notificación para una película próxima específica.
  *
  * Cada ruta se conecta con su respectivo controlador.
  */
 
 import { Router } from "express";
-import { createMovie, getMovies, getMoviesToday, getMoviesWeekly, getMoviesByFilters, getMovieById, getMovieFunctions, getRecommendedMovies } from "../controllers/movie.controller";
+import { createMovie, getMovies, getMoviesToday, getMoviesWeekly, getMoviesByFilters, getMovieById, getMovieFunctions, getRecommendedMovies,getUpcomingMovies, 
+    getUpcomingMovieById} from "../controllers/movie.controller";
 
 
 const router = Router();
@@ -535,6 +539,26 @@ router.get("/:id/recommendations", getRecommendedMovies);
  *               error: "Error al obtener el detalle de la película"
  */
 router.get("/:id", getMovieById);
+
+
+
+
+
+
+
+
+router.get("/upcoming", getUpcomingMovies);
+
+
+
+
+
+router.get("/upcoming/:id", getUpcomingMovieById);
+
+
+// router.post("/notifications/upcoming", createUpcomingMovieNotification); realizar lo de notificaciones
+
+
 
 export default router;
 
