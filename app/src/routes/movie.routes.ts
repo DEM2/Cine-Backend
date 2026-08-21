@@ -541,16 +541,94 @@ router.get("/:id/recommendations", getRecommendedMovies);
 router.get("/:id", getMovieById);
 
 
-
-
-
-
+/**
+ * GET /api/movies/upcoming
+ * -------------------------
+ * Obtiene la lista de películas próximas a estrenarse (status UPCOMING).
+ * Ordenadas por fecha de estreno ascendente. RN-017.
+ *
+ * Response:
+ *  - 200 OK: Retorna un arreglo de películas con genres y cast.
+ *
+ * @swagger
+ * /api/movies/upcoming:
+ *   get:
+ *     summary: Obtener próximos estrenos
+ *     tags: [Movies]
+ *     responses:
+ *       200:
+ *         description: Lista de próximos estrenos obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 5
+ *                 title: "Avatar 3"
+ *                 original_title: "Avatar 3"
+ *                 synopsis: "Continúa la saga de Pandora..."
+ *                 director: "James Cameron"
+ *                 duration_minutes: 190
+ *                 rating: "B15"
+ *                 language: "Inglés"
+ *                 dubbed: true
+ *                 subtitled: true
+ *                 poster: "https://image.tmdb.org/t/p/original/avatar3.jpg"
+ *                 premiere: false
+ *                 audience_rating: 0
+ *                 trailer_url: "https://www.youtube.com/embed/xxx"
+ *                 release_date: "2026-12-18"
+ *                 is_release: false
+ *                 status: "UPCOMING"
+ *                 genres:
+ *                   - id: 3
+ *                     name: "Ciencia ficción"
+ *                 cast:
+ *                   - id: 10
+ *                     actorName: "Sam Worthington"
+ *                     roleName: "Jake Sully"
+ *       500:
+ *         description: Internal server error
+ */
 
 
 router.get("/upcoming", getUpcomingMovies);
 
 
-
+/**
+ * GET /api/movies/upcoming/{id}
+ * ------------------------------
+ * Obtiene el detalle de una película próxima a estrenarse.
+ * Solo si status = UPCOMING. RN-017.
+ *
+ * @swagger
+ * /api/movies/upcoming/{id}:
+ *   get:
+ *     summary: Obtener detalle de un próximo estreno
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 5
+ *     responses:
+ *       200:
+ *         description: Detalle del próximo estreno
+ *         content:
+ *           application/json:
+ *             example:
+ *               id: 5
+ *               title: "Avatar 3"
+ *               # ... mismos campos que arriba
+ *       404:
+ *         description: La película no está próxima a estrenarse
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La película no está próxima a estrenarse."
+ *       500:
+ *         description: Internal server error
+ */
 
 
 router.get("/upcoming/:id", getUpcomingMovieById);

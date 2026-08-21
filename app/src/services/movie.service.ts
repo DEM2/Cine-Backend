@@ -6,6 +6,7 @@ import repository from "../repositories/movie.repository";
 import AppError from "../error/appError";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
 import MovieCast from "../models/movie-cast.model";
+import Genre from "../models/genre.model";
 import { IMovieService } from "../services/interfaces/movie.service.interface"
 import Showtime from "../models/showtime.model";
 
@@ -37,6 +38,16 @@ class MovieService implements IMovieService {
 
         if (!dto.genres || dto.genres.length === 0) {
             throw new AppError(400, "Debes asignar al menos un género a la película.");
+        }
+
+        // Validar que los géneros existan
+        const existingGenres = await Genre.findAll({
+            where: { id: dto.genres },
+        });
+        if (existingGenres.length !== dto.genres.length) {
+            const foundIds = existingGenres.map(g => g.id);
+            const missing = dto.genres.filter(id => !foundIds.includes(id));
+            throw new AppError(400, `Los siguientes géneros no existen: ${missing.join(", ")}`);
         }
 
         // Verificar si ya existe una película con el mismo título
