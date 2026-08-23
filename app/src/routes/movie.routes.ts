@@ -19,8 +19,8 @@
  */
 
 import { Router } from "express";
-import { createMovie, getMovies, getMoviesToday, getMoviesWeekly, getMoviesByFilters, getMovieById, getMovieFunctions, getRecommendedMovies,getUpcomingMovies, 
-    getUpcomingMovieById} from "../controllers/movie.controller";
+import { createMovie, getMovies, getMoviesToday, getMoviesWeekly, getMoviesByFilters, getMovieById, getMovieFunctions, getRecommendedMovies,getUpcomingMovies,
+    getUpcomingMovieById, createUpcomingMovieNotification, getUserNotifications, getNotificationById, getMoviesByCity} from "../controllers/movie.controller";
 
 
 const router = Router();
@@ -477,70 +477,6 @@ router.get("/:id/functions", getMovieFunctions);
  *               error: "Error al obtener las películas recomendadas"
  */
 router.get("/:id/recommendations", getRecommendedMovies);
-
-/**
- * GET /api/movies/{id}
- * --------------------
- * Obtiene el detalle completo de una película por su identificador.
- *
- * Response:
- *  - 200 OK: Retorna el detalle de la película en formato JSON.
- *  - 404 Not Found: La película no existe.
- *  - 500 Internal Server Error: Error inesperado durante la consulta.
- *
- * @swagger
- * /api/movies/{id}:
- *   get:
- *     summary: Obtener el detalle de una película
- *     tags: [Movies]
- *     parameters:
- *       - in: path
- *         name: id
- *         required: true
- *         description: Identificador de la película
- *         schema:
- *           type: integer
- *           example: 1
- *     responses:
- *       200:
- *         description: Detalle de la película obtenido exitosamente
- *         content:
- *           application/json:
- *             example:
- *               id: 1
- *               title: "Inception"
- *               original_title: "Inception"
- *               synopsis: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
- *               director: "Christopher Nolan"
- *               duration_minutes: 148
- *               rating: "PG-13"
- *               language: "Inglés"
- *               dubbed: true
- *               subtitled: true
- *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
- *               premiere: false
- *               audience_rating: 4.8
- *               genres:
- *                 - id: 1
- *                   name: "Acción"
- *                 - id: 6
- *                   name: "Ciencia ficción"
- *       404:
- *         description: La película no existe
- *         content:
- *           application/json:
- *             example:
- *               message: "Película no encontrada"
- *       500:
- *         description: Error interno del servidor
- *         content:
- *           application/json:
- *             example:
- *               error: "Error al obtener el detalle de la película"
- */
-router.get("/:id", getMovieById);
-
-
 /**
  * GET /api/movies/upcoming
  * -------------------------
@@ -634,7 +570,262 @@ router.get("/upcoming", getUpcomingMovies);
 router.get("/upcoming/:id", getUpcomingMovieById);
 
 
-// router.post("/notifications/upcoming", createUpcomingMovieNotification); realizar lo de notificaciones
+/**
+ * POST /api/movies/notifications/upcoming
+ * ---------------------------------------
+ * HU005: Registra la solicitud de notificación de un usuario para el
+ * estreno de una película próxima.
+ *
+ * RN-017: la película debe estar en estado UPCOMING.
+ * RN-019: no se permiten solicitudes duplicadas por usuario y película.
+ *
+ * @swagger
+ * /api/movies/notifications/upcoming:
+ *   post:
+ *     summary: Solicitar notificación de próximo estreno
+ *     tags: [Movies]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - movieId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: Identificador del usuario (temporal hasta implementar auth)
+ *                 example: 1
+ *               movieId:
+ *                 type: integer
+ *                 description: Identificador de la película próxima a estrenar
+ *                 example: 5
+ *     responses:
+ *       201:
+ *         description: Solicitud de notificación registrada exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Notificación registrada. Te avisaremos cuando la película entre en cartelera."
+ *               notification:
+ *                 id: 1
+ *                 userId: 1
+ *                 movieId: 5
+ *                 notified: false
+ *       400:
+ *         description: Solicitud duplicada (RN-019) o datos inválidos
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Ya solicitaste notificación para esta película."
+ *       404:
+ *         description: La película no está próxima a estrenarse (RN-017)
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La película no está próxima a estrenarse."
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/notifications/upcoming", createUpcomingMovieNotification);
+
+/**
+ * GET /api/movies/notifications/upcoming?userId={id}
+ * --------------------------------------------------
+ * HU005: Obtiene todas las solicitudes de notificación registradas por un usuario.
+ *
+ * @swagger
+ * /api/movies/notifications/upcoming:
+ *   get:
+ *     summary: Obtener solicitudes de notificación del usuario
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador del usuario (temporal hasta implementar auth)
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de solicitudes obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 1
+ *                 userId: 1
+ *                 movieId: 5
+ *                 notified: false
+ *                 movie:
+ *                   id: 5
+ *                   title: "Avatar 3"
+ *                   poster: "https://image.tmdb.org/t/p/original/avatar3.jpg"
+ *                   release_date: "2026-12-18"
+ *                   status: "UPCOMING"
+ *       400:
+ *         description: Falta el query param userId o es inválido
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/notifications/upcoming", getUserNotifications);
+
+/**
+ * GET /api/movies/notifications/upcoming/{id}?userId={id}
+ * -------------------------------------------------------
+ * HU005: Obtiene una solicitud de notificación específica del usuario.
+ *
+ * @swagger
+ * /api/movies/notifications/upcoming/{id}:
+ *   get:
+ *     summary: Obtener una solicitud de notificación por id
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador de la solicitud
+ *         example: 1
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador del usuario (temporal hasta implementar auth)
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Solicitud obtenida exitosamente
+ *       404:
+ *         description: Notificación no encontrada para este usuario
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Notificación no encontrada."
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/notifications/upcoming/:id", getNotificationById);
+
+/**
+ * GET /api/movies/by-city?cityId={id}
+ * -----------------------------------
+ * Obtiene las películas disponibles en una ciudad específica según la
+ * tabla `movie_locations`: disponibilidad nacional (scope COUNTRY del
+ * país de la ciudad) o puntual (scope CITY).
+ *
+ * @swagger
+ * /api/movies/by-city:
+ *   get:
+ *     summary: Obtener películas disponibles por ciudad
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: query
+ *         name: cityId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador de la ciudad
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de películas disponibles en la ciudad
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 1
+ *                 title: "Inception"
+ *                 status: "ACTIVE"
+ *                 locations:
+ *                   - id: 1
+ *                     movieId: 1
+ *                     countryId: 1
+ *                     cityId: null
+ *                     scope: "COUNTRY"
+ *       400:
+ *         description: Falta el query param cityId o es inválido
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "El query param cityId es obligatorio y debe ser un entero válido."
+ *       404:
+ *         description: La ciudad indicada no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La ciudad indicada no existe."
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/by-city", getMoviesByCity);
+
+/**
+ * GET /api/movies/{id}
+ * --------------------
+ * Obtiene el detalle completo de una película por su identificador.
+ *
+ * Response:
+ *  - 200 OK: Retorna el detalle de la película en formato JSON.
+ *  - 404 Not Found: La película no existe.
+ *  - 500 Internal Server Error: Error inesperado durante la consulta.
+ *
+ * @swagger
+ * /api/movies/{id}:
+ *   get:
+ *     summary: Obtener el detalle de una película
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Identificador de la película
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *     responses:
+ *       200:
+ *         description: Detalle de la película obtenido exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               id: 1
+ *               title: "Inception"
+ *               original_title: "Inception"
+ *               synopsis: "Dom Cobb es un ladrón especializado en infiltrarse en los sueños."
+ *               director: "Christopher Nolan"
+ *               duration_minutes: 148
+ *               rating: "PG-13"
+ *               language: "Inglés"
+ *               dubbed: true
+ *               subtitled: true
+ *               poster: "https://image.tmdb.org/t/p/original/poster.jpg"
+ *               premiere: false
+ *               audience_rating: 4.8
+ *               genres:
+ *                 - id: 1
+ *                   name: "Acción"
+ *                 - id: 6
+ *                   name: "Ciencia ficción"
+ *       404:
+ *         description: La película no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Película no encontrada"
+ *       500:
+ *         description: Error interno del servidor
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Error al obtener el detalle de la película"
+ */
+router.get("/:id", getMovieById);
+
+
 
 
 

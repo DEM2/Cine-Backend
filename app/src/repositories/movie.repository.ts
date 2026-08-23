@@ -10,6 +10,7 @@ import Format from "../models/format.model";
 
 import Genre from "../models/genre.model";
 import MovieCast from "../models/movie-cast.model";
+import MovieLocation from "../models/movie-location.model";
 import { idText } from "typescript";
 
 /**
@@ -236,6 +237,49 @@ async findUpcoming(): Promise<Movie[]> {
         include: [
             { model: Genre, as: 'genres', attributes: ['name', 'id'], through: { attributes: [] } },
             { model: MovieCast, as: 'cast', attributes: ['id', 'actorName', 'roleName'] },
+        ]
+    });
+}
+
+/**
+ * Obtiene las películas disponibles en una ciudad específica.
+ *
+ * Una película está disponible en la ciudad cuando:
+ *  - Tiene una ubicación con scope 'CITY' apuntando a esa ciudad, o
+ *  - Tiene una ubicación con scope 'COUNTRY' para el país de esa ciudad
+ *    (disponibilidad nacional).
+ *
+ * El `countryId` se resuelve en el servicio a partir de la ciudad consultada.
+ *
+ * Detalle Sequelize: el `where` dentro del include genera un INNER JOIN
+ * con condición sobre `movie_locations`, no sobre la tabla principal.
+ * `required: true` garantiza que SOLO regresen películas que tengan al
+ * menos una fila de ubicación que cumpla la condición.
+ */
+async findAvailableInCity(cityId: number, countryId: number): Promise<Movie[]> {
+    return await Movie.findAll({
+        include: [
+            {
+                // Géneros de cada película (N:M a través de movie_genres).
+                model: Genre,
+                as: 'genres',
+                attributes: ['name', 'id'],
+                through: { attributes: [] }, // oculta las columnas de la tabla intermedia
+            },
+            {
+                // Filtro por distribución geográfica.
+                model: MovieLocation,
+                as: 'locations',
+                required: true, // INNER JOIN: sin ubicación compatible → fuera
+                where: {
+                    [Op.or]: [
+                        // Caso 1: distribución nacional que cubre el país de la ciudad.
+                        { scope: "COUNTRY", countryId },
+                        // Caso 2: distribución puntual para exactamente esta ciudad.
+                        { scope: "CITY", cityId },
+                    ]
+                }
+            }
         ]
     });
 }

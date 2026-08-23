@@ -23,6 +23,7 @@ import MovieCast from "./movie-cast.model";
 import CinemaComplex from "./complex/cinema.complex.model";
 import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
+import MovieLocation from "./movie-location.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -118,6 +119,17 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
+
+// associations.ts
+import UpcomingMovieNotification from "./upcoming-movie-notification.model";
+
+User.hasMany(UpcomingMovieNotification, { foreignKey: "userId", as: "notifications" });
+UpcomingMovieNotification.belongsTo(User, { foreignKey: "userId", as: "user" });
+Movie.hasMany(UpcomingMovieNotification, { foreignKey: "movieId", as: "upcomingNotifications" });
+UpcomingMovieNotification.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+
+
 /**
  * Un movie tiene muchos showtimes (relación uno a muchos).
  */
@@ -142,9 +154,24 @@ Genre.belongsToMany(Movie, {
     as: "movies" 
 });
 
+/**
+ * Una película puede estar disponible en varias ubicaciones (países o ciudades).
+ * El discriminador `scope` define si la disponibilidad es nacional o por ciudad.
+ */
+Movie.hasMany(MovieLocation, { foreignKey: "movieId", as: "locations" });
+MovieLocation.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+Country.hasMany(MovieLocation, { foreignKey: "countryId", as: "movieLocations" });
+MovieLocation.belongsTo(Country, { foreignKey: "countryId", as: "country" });
+
+City.hasMany(MovieLocation, { foreignKey: "cityId", as: "movieLocations" });
+MovieLocation.belongsTo(City, { foreignKey: "cityId", as: "city" });
+
 
 export { Country, Department, City, Role, DocumentType, User, Genre, Movie, Showtime, Format };
 export { CinemaComplex };
 export { RoomType };
 export { Room };
 export { MovieCast };
+export { UpcomingMovieNotification };
+export { MovieLocation };

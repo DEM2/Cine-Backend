@@ -3,12 +3,18 @@
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import repository from "../repositories/movie.repository";
+import notificationRepository from "../repositories/notification.repository";
+import UpcomingMovieNotification from "../models/upcoming-movie-notification.model";
 import AppError from "../error/appError";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
 import MovieCast from "../models/movie-cast.model";
 import Genre from "../models/genre.model";
 import { IMovieService } from "../services/interfaces/movie.service.interface"
 import Showtime from "../models/showtime.model";
+import City from "../models/geo_locations/city.model";
+import Department from "../models/geo_locations/department.model";
+import Country from "../models/geo_locations/country.model";
+
 
 /**
  * Servicio de Movie
@@ -158,10 +164,31 @@ class MovieService implements IMovieService {
         return await repository.findRecommendedMovies(movie.id, genreIds);
     }
 
+    /**
+     *
+     * HU005 - PRÓXIMAMENTE (sección de notificaciones y ubicaciones)
+     * 
+     *
+     * Los siguientes métodos implementan la lógica de negocio de la
+     * Historia de Usuario 005: "Visualización de Próximos Estrenos".
+     */
+
+    /**
+     * HU005 - Obtiene el listado de próximos estrenos.
+     *
+     * RN-017: solo se muestran películas con estado "UPCOMING".
+     * Se ordenan por fecha de estreno ascendente (lo aplica el repositorio).
+     */
     async getUpcoming(): Promise<Movie[]> {
         return await repository.findUpcoming();
     }
 
+    /**
+     * HU005 - Obtiene el detalle de un próximo estreno específico.
+     *
+     * RN-017: si la película no existe O su estado no es "UPCOMING"
+     * (por ejemplo, ya está en cartelera), se responde 404.
+     */
     async getUpcomingById(id: number): Promise<Movie> {
         const movie = await repository.findById(id);
         if (!movie || movie.status !== "UPCOMING") {
@@ -169,9 +196,125 @@ class MovieService implements IMovieService {
         }
         return movie;
     }
+
+    /**
+     * HU005 - Registra la solicitud de notificación de un usuario para el
+     * estreno de una película ("Botón: Notificarme cuando esté disponible").
+     *
+     * Reglas de negocio aplicadas:
+     *  - RN-017: solo se permite solicitar notificación de películas con
+     *    estado UPCOMING. Si ya está en cartelera o no existe → 404.
+     *  - RN-019: un usuario NO puede registrar más de una solicitud para la
+     *    misma película → 400 si ya existe. Además, la tabla tiene un índice
+     *    único compuesto (user_id, movie_id) que lo garantiza a nivel BD,
+     *    este chequeo previo es la primera línea de defensa.
+     *
+     * Flujo:
+     *  1. Validar que la película exista y esté UPCOMING (RN-017).
+     *  2. Verificar que no exista una solicitud previa del usuario (RN-019).
+     *  3. Crear el registro en `upcoming_movie_notifications`.
+     *
+     * El envío real del correo (RN-020) ocurre cuando la película cambia a
+     * estado ACTIVE; por eso el registro nace con notified = false (default).
+     */
+    async createNotification(userId: number, movieId: number): Promise<UpcomingMovieNotification> {
+
+        // 1. RN-017: validar existencia y estado de la película.
+        const movie = await repository.findById(movieId);
+
+        if (!movie || movie.status !== "UPCOMING") {
+            throw new AppError(404, "La película no está próxima a estrenarse.");
+        }
+
+        // 2. RN-019: rechazar solicitudes duplicadas del mismo usuario.
+        const existing = await notificationRepository.findOne(userId, movieId);
+
+        if (existing) {
+            throw new AppError(400, "Ya solicitaste notificación para esta película.");
+        }
+
+        // 3. Registrar la solicitud. Queda pendiente (notified = false)
+        // hasta que la película entre en cartelera y se le envíe el correo.
+        return await notificationRepository.create({ userId, movieId });
+    }
+
+    /**
+     * HU005 - Obtiene todas las solicitudes de notificación registradas
+     * por un usuario (para mostrarle a cuáles estrenos se suscribió).
+     *
+     * Cada solicitud incluye los datos básicos de la película asociada
+     * (los agrega el repositorio mediante el include con alias "movie").
+     */
+    async getMyNotifications(userId: number): Promise<UpcomingMovieNotification[]> {
+        return await notificationRepository.findByUser(userId);
+    }
+
+    /**
+     * HU005 - Obtiene UNA solicitud de notificación específica del usuario.
+     *
+     * La búsqueda filtra por id Y userId al mismo tiempo: así un usuario
+     * solo puede consultar sus propias solicitudes, nunca las de otro.
+     * Si no existe esa combinación → 404.
+     */
+    async getMyNotificationById(id: number, userId: number): Promise<UpcomingMovieNotification> {
+        const notification = await notificationRepository.findByIdAndUser(id, userId);
+        if (!notification) {
+            throw new AppError(404, "Notificación no encontrada.");
+        }
+        return notification;
+    }
+
+    /**
+     * HU005/RN-018 - Obtiene las películas disponibles en una ciudad.
+     *
+     * Contexto: el catálogo varía según la ubicación geográfica. La
+     * distribución se modela en la tabla `movie_locations` con un campo
+     * discriminador (`scope`):
+     *   - scope = 'COUNTRY' → disponible en TODO el país (city_id null).
+     *   - scope = 'CITY'    → disponible únicamente en esa ciudad.
+     *
+     * Problema: la fila 'COUNTRY' guarda el país, pero el cliente consulta
+     * por ciudad. Hay que "subir" en la jerarquía geográfica para saber
+     * a qué país pertenece la ciudad consultada:
+     *
+     *      City → Department → Country
+     *
+     * Flujo:
+     *  1. Buscar la ciudad e incluir su departamento y país (includes anidados).
+     *  2. Validar que la ciudad exista → 404 si no.
+     *  3. Extraer el countryId de la cadena city.department.country.
+     *  4. Consultar películas cuya distribución cubra la ciudad:
+     *       WHERE (scope='COUNTRY' AND country_id=<país>)
+     *          OR (scope='CITY'    AND city_id=<ciudad>)
+     *     (la condición exacta vive en el repositorio).
+     */
+    async getAvailableInCity(cityId: number): Promise<Movie[]> {
+
+        // 1. Traer la ciudad con su departamento y su país en una sola consulta.
+        //    Los alias "department" y "country" están definidos en associations.ts.
+        const city = await City.findByPk(cityId, {
+            include: [{
+                model: Department,
+                as: "department",
+                include: [{ model: Country, as: "country" }]
+            }]
+        }) as any;
+
+        // 2. Validación de existencia de la ciudad.
+        if (!city) {
+            throw new AppError(404, "La ciudad indicada no existe.");
+        }
+
+        // 3. Subir por la jerarquía geográfica para obtener el país.
+        //    (optional chaining: si algún nivel viniera vacío, countryId queda undefined)
+        const countryId = city.department?.country?.id;
+        if (!countryId) {
+            throw new AppError(404, "No se pudo determinar el país de la ciudad.");
+        }
+
+        // 4. Delegar la consulta de películas al repositorio con ambos datos.
+        return await repository.findAvailableInCity(cityId, countryId);
+    }
 }
-
-
-
 
 export default new MovieService();
