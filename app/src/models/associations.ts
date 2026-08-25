@@ -24,6 +24,9 @@ import CinemaComplex from "./complex/cinema.complex.model";
 import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
 import MovieLocation from "./movie-location.model";
+import SeatType from "./complex/seat-type.model";
+import Seat from "./complex/seat.model";
+import CartSeat from "./reservations/cart-seat.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -94,6 +97,26 @@ RoomType.hasMany(Room, { foreignKey: "roomTypeId", as: "rooms" });
 Room.belongsTo(RoomType, { foreignKey: "roomTypeId", as: "roomType" });
 
 /**
+ * Un tipo de silla puede tener muchas sillas (relación uno a muchos).
+ */
+SeatType.hasMany(Seat, { foreignKey: "seatTypeId", as: "seats" });
+
+/**
+ * Una silla pertenece a un único tipo de silla (relación muchos a uno).
+ */
+Seat.belongsTo(SeatType, { foreignKey: "seatTypeId", as: "seatType" });
+
+/**
+ * Una sala tiene muchas sillas (relación uno a muchos).
+ */
+Room.hasMany(Seat, { foreignKey: "roomId", as: "seats" });
+
+/**
+ * Una silla pertenece a una única sala (relación muchos a uno).
+ */
+Seat.belongsTo(Room, { foreignKey: "roomId", as: "room" });
+
+/**
  * Un usuario pertenece a una única ciudad (relación muchos a uno).
  */
 User.belongsTo(City, { foreignKey: "cityId", as: "city" });
@@ -140,6 +163,17 @@ UpcomingMovieNotification.belongsTo(Movie, { foreignKey: "movieId", as: "movie" 
  */
 
 
+/**
+ * Una silla bloqueada en carrito pertenece a una única función (muchos a uno).
+ */
+CartSeat.belongsTo(Showtime, { foreignKey: "showtimeId", as: "showtime" });
+
+/**
+ * Una silla bloqueada en carrito pertenece a una única silla (muchos a uno).
+ */
+CartSeat.belongsTo(Seat, { foreignKey: "seatId", as: "seat" });
+
+
 Movie.belongsToMany(Genre, {
     through: "movie_genres",
     foreignKey: "movieId",
@@ -172,6 +206,8 @@ export { Country, Department, City, Role, DocumentType, User, Genre, Movie, Show
 export { CinemaComplex };
 export { RoomType };
 export { Room };
+export { SeatType };
+export { Seat };
 export { MovieCast };
 export { UpcomingMovieNotification };
 export { MovieLocation };
