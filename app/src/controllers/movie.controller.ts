@@ -426,3 +426,196 @@ export const getUpcomingMovieById = async (req: Request, res: Response): Promise
         return res.status(500).json({ error: error.message });
     }
 };
+
+/**
+ * 
+ * HU005 - PRÓXIMAMENTE (controladores de notificaciones)
+ * 
+ *
+ * Endpoints de la Historia de Usuario 005: "Visualización de Próximos Estrenos".
+ *
+ * Flujo arquitectónico (igual que el resto del proyecto):
+ *
+ *   Cliente HTTP → MovieController (este archivo) → MovieService
+ *                → NotificationRepository → Sequelize → PostgreSQL
+ *
+ * NOTA DE SEGURIDAD (importante para la sustentación):
+ *   Mientras el equipo no tiene middleware de autenticación, el `userId`
+ *   se recibe del cliente (body o query). Esto es TEMPORAL: en producción
+ *   el userId SIEMPRE debe salir del token JWT decodificado por un
+ *   middleware, nunca de datos enviados por el cliente.
+ */
+
+/**
+ * POST /api/movies/notifications/upcoming
+ *
+ * HU005 - Registra la solicitud de notificación de un usuario para el
+ * estreno de una película próxima ("Notificarme cuando esté disponible").
+ *
+ * Responsabilidad del controlador: validar formato de los datos de entrada
+ * y construir la respuesta HTTP. Las reglas de negocio (RN-017 y RN-019)
+ * viven en el servicio, NO aquí.
+ *
+ * @async
+ * @param {Request} req - Body esperado: { userId: number, movieId: number }
+ * @param {Response} res - Respuesta HTTP construida.
+ *
+ * Posibles respuestas:
+ *  - 201 Created: solicitud registrada (queda pendiente hasta el estreno).
+ *  - 400 Bad Request: faltan campos / no son enteros válidos, o el usuario
+ *    ya había solicitado notificación para esa película (RN-019).
+ *  - 404 Not Found: la película no existe o no está UPCOMING (RN-017).
+ *  - 500 Internal Server Error: error inesperado.
+ */
+export const createUpcomingMovieNotification = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        // TODO: reemplazar por req.user.id cuando exista el middleware de autenticación.
+        // El userId NO debe venir del body en producción.
+        const userId = Number(req.body.userId);
+        const movieId = Number(req.body.movieId);
+
+        // Validación básica de entrada: enteros positivos.
+        // Number("abc") da NaN y Number(1.5) no es entero → ambos caen aquí.
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(400).json({ error: "El campo userId es obligatorio y debe ser un entero válido." });
+        }
+
+        if (!Number.isInteger(movieId) || movieId <= 0) {
+            return res.status(400).json({ error: "El campo movieId es obligatorio y debe ser un entero válido." });
+        }
+
+        // Delega las reglas de negocio al servicio (RN-017 y RN-019).
+        const notification = await movieService.createNotification(userId, movieId);
+
+        // 201 Created: el recurso (la solicitud) fue creado.
+        return res.status(201).json({
+            message: "Notificación registrada. Te avisaremos cuando la película entre en cartelera.",
+            notification
+        });
+
+    } catch (error: any) {
+        // Los AppError son errores de negocio con su código HTTP asignado;
+        // cualquier otra cosa es un fallo inesperado → 500.
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * GET /api/movies/notifications/upcoming?userId={id}
+ *
+ * HU005 - Lista todas las solicitudes de notificación registradas por un
+ * usuario (a cuáles próximos estrenos se suscribió), incluyendo datos
+ * básicos de cada película.
+ *
+ * @async
+ * @param {Request} req - Query param requerido: userId (temporal hasta auth).
+ * @param {Response} res
+ *
+ * Posibles respuestas:
+ *  - 200 OK: arreglo de solicitudes (puede venir vacío si no hay ninguna).
+ *  - 400 Bad Request: falta userId o no es un entero válido.
+ *  - 500 Internal Server Error: error inesperado.
+ */
+export const getUserNotifications = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        // TODO: reemplazar por req.user.id cuando exista el middleware de autenticación.
+        const userId = Number(req.query.userId);
+
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(400).json({ error: "El query param userId es obligatorio y debe ser un entero válido." });
+        }
+
+        const notifications = await movieService.getMyNotifications(userId);
+
+        return res.status(200).json(notifications);
+
+    } catch (error: any) {
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * GET /api/movies/notifications/upcoming/{id}?userId={id}
+ *
+ * HU005 - Consulta UNA solicitud de notificación específica.
+ *
+ * Detalle de seguridad: el servicio busca por id Y userId a la vez,
+ * de modo que aunque el usuario conozca el id de una solicitud ajena,
+ * la consulta no le devolverá nada (404).
+ *
+ * @async
+ * @param {Request} req - Param de ruta: id de la solicitud. Query: userId.
+ * @param {Response} res
+ *
+ * Posibles respuestas:
+ *  - 200 OK: la solicitud solicitada con sus datos.
+ *  - 400 Bad Request: falta userId o no es válido.
+ *  - 404 Not Found: no existe una solicitud con ese id PARA ESE usuario.
+ *  - 500 Internal Server Error: error inesperado.
+ */
+export const getNotificationById = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        // TODO: reemplazar por req.user.id cuando exista el middleware de autenticación.
+        const userId = Number(req.query.userId);
+        const notificationId = Number(req.params.id);
+
+        if (!Number.isInteger(userId) || userId <= 0) {
+            return res.status(400).json({ error: "El query param userId es obligatorio y debe ser un entero válido." });
+        }
+
+        const notification = await movieService.getMyNotificationById(notificationId, userId);
+
+        return res.status(200).json(notification);
+
+    } catch (error: any) {
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};
+
+/**
+ * GET /api/movies/by-city?cityId={id}
+ *
+ * HU005/RN-018 - Lista las películas DISPONIBLES en una ciudad.
+ *
+ * Concepto clave: la disponibilidad se modela en la tabla `movie_locations`
+ * con un discriminador (`scope`):
+ *   - 'COUNTRY' → disponible en todo el país (una sola fila, city_id null).
+ *   - 'CITY'    → disponible solo en ciudades específicas (una fila por ciudad).
+ *
+ * Como el cliente pregunta por ciudad pero las filas 'COUNTRY' guardan país,
+ * el servicio primero "sube" por la jerarquía City → Department → Country
+ * para obtener el país, y luego consulta:
+ *     (scope='COUNTRY' AND country_id = <país de la ciudad>)
+ *     OR (scope='CITY' AND city_id = <ciudad pedida>)
+ *
+ * @async
+ * @param {Request} req - Query param requerido: cityId.
+ * @param {Response} res
+ *
+ * Posibles respuestas:
+ *  - 200 OK: películas disponibles (con genres y locations incluidas).
+ *  - 400 Bad Request: falta cityId o no es un entero válido.
+ *  - 404 Not Found: la ciudad no existe (o su país no pudo determinarse).
+ *  - 500 Internal Server Error: error inesperado.
+ */
+export const getMoviesByCity = async (req: Request, res: Response): Promise<Response> => {
+    try {
+        const cityId = Number(req.query.cityId);
+
+        if (!Number.isInteger(cityId) || cityId <= 0) {
+            return res.status(400).json({ error: "El query param cityId es obligatorio y debe ser un entero válido." });
+        }
+
+        // El servicio resuelve ciudad → país y delega al repositorio.
+        const movies = await movieService.getAvailableInCity(cityId);
+
+        return res.status(200).json(movies);
+
+    } catch (error: any) {
+        if (error instanceof AppError) return res.status(error.status).json({ error: error.message });
+        return res.status(500).json({ error: error.message });
+    }
+};

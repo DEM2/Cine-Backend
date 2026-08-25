@@ -174,11 +174,13 @@ Movie.init(
     trailer_url: {
       type: DataTypes.TEXT,
       allowNull: false,
+      defaultValue : '',
       field: "trailer_url",
     },
     release_date: {
       type: DataTypes.DATEONLY,
       allowNull: false,
+      defaultValue : DataTypes.NOW,
       field: "release_date",
     },
     is_release: {

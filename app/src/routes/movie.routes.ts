@@ -19,8 +19,8 @@
  */
 
 import { Router } from "express";
-import { createMovie, getMovies, getMoviesToday, getMoviesWeekly, getMoviesByFilters, getMovieById, getMovieFunctions, getRecommendedMovies,getUpcomingMovies, 
-    getUpcomingMovieById} from "../controllers/movie.controller";
+import { createMovie, getMovies, getMoviesToday, getMoviesWeekly, getMoviesByFilters, getMovieById, getMovieFunctions, getRecommendedMovies,getUpcomingMovies,
+    getUpcomingMovieById, createUpcomingMovieNotification, getUserNotifications, getNotificationById, getMoviesByCity} from "../controllers/movie.controller";
 
 
 const router = Router();
@@ -477,6 +477,291 @@ router.get("/:id/functions", getMovieFunctions);
  *               error: "Error al obtener las películas recomendadas"
  */
 router.get("/:id/recommendations", getRecommendedMovies);
+/**
+ * GET /api/movies/upcoming
+ * -------------------------
+ * Obtiene la lista de películas próximas a estrenarse (status UPCOMING).
+ * Ordenadas por fecha de estreno ascendente. RN-017.
+ *
+ * Response:
+ *  - 200 OK: Retorna un arreglo de películas con genres y cast.
+ *
+ * @swagger
+ * /api/movies/upcoming:
+ *   get:
+ *     summary: Obtener próximos estrenos
+ *     tags: [Movies]
+ *     responses:
+ *       200:
+ *         description: Lista de próximos estrenos obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 5
+ *                 title: "Avatar 3"
+ *                 original_title: "Avatar 3"
+ *                 synopsis: "Continúa la saga de Pandora..."
+ *                 director: "James Cameron"
+ *                 duration_minutes: 190
+ *                 rating: "B15"
+ *                 language: "Inglés"
+ *                 dubbed: true
+ *                 subtitled: true
+ *                 poster: "https://image.tmdb.org/t/p/original/avatar3.jpg"
+ *                 premiere: false
+ *                 audience_rating: 0
+ *                 trailer_url: "https://www.youtube.com/embed/xxx"
+ *                 release_date: "2026-12-18"
+ *                 is_release: false
+ *                 status: "UPCOMING"
+ *                 genres:
+ *                   - id: 3
+ *                     name: "Ciencia ficción"
+ *                 cast:
+ *                   - id: 10
+ *                     actorName: "Sam Worthington"
+ *                     roleName: "Jake Sully"
+ *       500:
+ *         description: Internal server error
+ */
+
+
+router.get("/upcoming", getUpcomingMovies);
+
+
+/**
+ * GET /api/movies/upcoming/{id}
+ * ------------------------------
+ * Obtiene el detalle de una película próxima a estrenarse.
+ * Solo si status = UPCOMING. RN-017.
+ *
+ * @swagger
+ * /api/movies/upcoming/{id}:
+ *   get:
+ *     summary: Obtener detalle de un próximo estreno
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 5
+ *     responses:
+ *       200:
+ *         description: Detalle del próximo estreno
+ *         content:
+ *           application/json:
+ *             example:
+ *               id: 5
+ *               title: "Avatar 3"
+ *               # ... mismos campos que arriba
+ *       404:
+ *         description: La película no está próxima a estrenarse
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La película no está próxima a estrenarse."
+ *       500:
+ *         description: Internal server error
+ */
+
+
+router.get("/upcoming/:id", getUpcomingMovieById);
+
+
+/**
+ * POST /api/movies/notifications/upcoming
+ * ---------------------------------------
+ * HU005: Registra la solicitud de notificación de un usuario para el
+ * estreno de una película próxima.
+ *
+ * RN-017: la película debe estar en estado UPCOMING.
+ * RN-019: no se permiten solicitudes duplicadas por usuario y película.
+ *
+ * @swagger
+ * /api/movies/notifications/upcoming:
+ *   post:
+ *     summary: Solicitar notificación de próximo estreno
+ *     tags: [Movies]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - userId
+ *               - movieId
+ *             properties:
+ *               userId:
+ *                 type: integer
+ *                 description: Identificador del usuario (temporal hasta implementar auth)
+ *                 example: 1
+ *               movieId:
+ *                 type: integer
+ *                 description: Identificador de la película próxima a estrenar
+ *                 example: 5
+ *     responses:
+ *       201:
+ *         description: Solicitud de notificación registrada exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "Notificación registrada. Te avisaremos cuando la película entre en cartelera."
+ *               notification:
+ *                 id: 1
+ *                 userId: 1
+ *                 movieId: 5
+ *                 notified: false
+ *       400:
+ *         description: Solicitud duplicada (RN-019) o datos inválidos
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Ya solicitaste notificación para esta película."
+ *       404:
+ *         description: La película no está próxima a estrenarse (RN-017)
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La película no está próxima a estrenarse."
+ *       500:
+ *         description: Internal server error
+ */
+router.post("/notifications/upcoming", createUpcomingMovieNotification);
+
+/**
+ * GET /api/movies/notifications/upcoming?userId={id}
+ * --------------------------------------------------
+ * HU005: Obtiene todas las solicitudes de notificación registradas por un usuario.
+ *
+ * @swagger
+ * /api/movies/notifications/upcoming:
+ *   get:
+ *     summary: Obtener solicitudes de notificación del usuario
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador del usuario (temporal hasta implementar auth)
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de solicitudes obtenida exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 1
+ *                 userId: 1
+ *                 movieId: 5
+ *                 notified: false
+ *                 movie:
+ *                   id: 5
+ *                   title: "Avatar 3"
+ *                   poster: "https://image.tmdb.org/t/p/original/avatar3.jpg"
+ *                   release_date: "2026-12-18"
+ *                   status: "UPCOMING"
+ *       400:
+ *         description: Falta el query param userId o es inválido
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/notifications/upcoming", getUserNotifications);
+
+/**
+ * GET /api/movies/notifications/upcoming/{id}?userId={id}
+ * -------------------------------------------------------
+ * HU005: Obtiene una solicitud de notificación específica del usuario.
+ *
+ * @swagger
+ * /api/movies/notifications/upcoming/{id}:
+ *   get:
+ *     summary: Obtener una solicitud de notificación por id
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador de la solicitud
+ *         example: 1
+ *       - in: query
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador del usuario (temporal hasta implementar auth)
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Solicitud obtenida exitosamente
+ *       404:
+ *         description: Notificación no encontrada para este usuario
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "Notificación no encontrada."
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/notifications/upcoming/:id", getNotificationById);
+
+/**
+ * GET /api/movies/by-city?cityId={id}
+ * -----------------------------------
+ * Obtiene las películas disponibles en una ciudad específica según la
+ * tabla `movie_locations`: disponibilidad nacional (scope COUNTRY del
+ * país de la ciudad) o puntual (scope CITY).
+ *
+ * @swagger
+ * /api/movies/by-city:
+ *   get:
+ *     summary: Obtener películas disponibles por ciudad
+ *     tags: [Movies]
+ *     parameters:
+ *       - in: query
+ *         name: cityId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         description: Identificador de la ciudad
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Lista de películas disponibles en la ciudad
+ *         content:
+ *           application/json:
+ *             example:
+ *               - id: 1
+ *                 title: "Inception"
+ *                 status: "ACTIVE"
+ *                 locations:
+ *                   - id: 1
+ *                     movieId: 1
+ *                     countryId: 1
+ *                     cityId: null
+ *                     scope: "COUNTRY"
+ *       400:
+ *         description: Falta el query param cityId o es inválido
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "El query param cityId es obligatorio y debe ser un entero válido."
+ *       404:
+ *         description: La ciudad indicada no existe
+ *         content:
+ *           application/json:
+ *             example:
+ *               error: "La ciudad indicada no existe."
+ *       500:
+ *         description: Internal server error
+ */
+router.get("/by-city", getMoviesByCity);
 
 /**
  * GET /api/movies/{id}
@@ -541,22 +826,6 @@ router.get("/:id/recommendations", getRecommendedMovies);
 router.get("/:id", getMovieById);
 
 
-
-
-
-
-
-
-router.get("/upcoming", getUpcomingMovies);
-
-
-
-
-
-router.get("/upcoming/:id", getUpcomingMovieById);
-
-
-// router.post("/notifications/upcoming", createUpcomingMovieNotification); realizar lo de notificaciones
 
 
 
