@@ -6,15 +6,7 @@ services:
     ports:
       - "${APP_PORT}:${APP_PORT}"
     volumes:
-      # Monta el código fuente para hot-reload en desarrollo.
-      # NOTA: este montaje pisa todo lo que la imagen copió en /usr/src/app,
-      # incluido el node_modules de Linux instalado en el build.
       - ./app:/usr/src/app
-      # Volumen anónimo: preserva el node_modules que instaló el Dockerfile
-      # (binarios de Linux). Sin esta línea, el node_modules de Windows
-      # entra al contenedor y los shims de .bin apuntan a "node.exe",
-      # lo que produce el error: exec: node.exe: not found (exit 127).
-      - /usr/src/app/node_modules
     env_file:
       - ./.env
     environment:
