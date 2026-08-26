@@ -21,7 +21,7 @@
  * @property {string} synopsis -  descripción de la peliculas.
  * @property {string} director -  el director de la peliculas.
  * @property {number} duration_minutes -  duracion de la pelicula
- * @property {string} genre - Género de la película.
+ * @property {number[]} genres - Géneros de la película.
  * @property {string} rating - Clasificación (A, B, B15, C, etc.).
  * @property {string} language - Idioma original.
  * @property {boolean} dubbed - Indica si está disponible doblada.
@@ -73,7 +73,7 @@ export interface CreateMovieDto {
     /**
      * Género de la película.
      */
-    genre: string;
+    genres: number[];
 
     /**
      * Clasificación de la película (A, B, B15, C, etc.).
@@ -109,5 +109,59 @@ export interface CreateMovieDto {
      * Calificación promedio otorgada por el público.
      */
     audience_rating: number;
+
+    /**
+     * (Opcional) URL del banner promocional.
+     */
+    banner_url?: string;
+
+    /**
+     * URL del trailer (requerido).
+     */
+    trailer_url: string;
+
+    /**
+     * Fecha de estreno (YYYY-MM-DD) (requerido).
+     */
+    release_date: string;
+
+    /**
+     * Indica si la película ya está en release.
+     */
+    is_release?: boolean;
+
+    /**
+     * Estado de la película (p.ej. ACTIVE, INACTIVE, UPCOMING).
+     */
+    status?: string;
+
+    /**
+     * (Opcional) Horarios de función asociados a la película.
+     * Si se proporciona, se crearán automáticamente al crear la película.
+     * 
+     * Formatos disponibles (IDs):
+     *  - 1: 2D
+     *  - 2: 3D
+     *  - 3: IMAX
+     *  - 4: VIP
+     *  - 5: 4DX
+     */
+    showtimes?: Array<{
+        date: string;              // Formato: YYYY-MM-DD
+        time: string;              // Formato: HH:MM
+        formatId: number;          // ID del formato (1-5)
+        complex: string;           // Nombre del complejo de cines
+        isActive?: boolean;        // Por defecto: true
+        isSoldOut?: boolean;       // Por defecto: false
+    }>;
+
+    /**
+     * (Opcional) Reparto de la película (actores).
+     * Si se proporciona, se crearán automáticamente al crear la película.
+     */
+    cast?: Array<{
+        actorName: string;         // Nombre del actor (requerido)
+        roleName?: string;         // Nombre del personaje (opcional)
+    }>;
 
 }

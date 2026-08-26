@@ -1,6 +1,7 @@
 // app/src/repositories/interfaces/movie.repository.interface.ts
 
 import Movie, { MovieCreationAttributes } from "../../models/movie.model";
+import { MovieFilterDto } from "../../dto/movie/movie-filter.dto";
 
 /**
  * Contrato del Repositorio de Películas
@@ -13,9 +14,9 @@ import Movie, { MovieCreationAttributes } from "../../models/movie.model";
 export interface IMovieRepository {
 
     /**
-     * Crea una película.
+     * Crea una película y asocia sus géneros (N:M).
      */
-    create(data: MovieCreationAttributes): Promise<Movie>;
+    create(data: MovieCreationAttributes, genreIds: number[]): Promise<Movie>;
 
     /**
      * Obtiene todas las películas.
@@ -26,4 +27,25 @@ export interface IMovieRepository {
      * Busca una película por su título.
      */
     findByTitle(title: string): Promise<Movie | null>;
+
+    /**
+     * Obtiene las películas con funciones activas en una fecha específica.
+     */
+    findToday(date: string): Promise<Movie[]>;
+
+    /**
+     * Obtiene las películas con funciones activas en un rango de fechas.
+     */
+    findWeekly(startDate: string, endDate: string): Promise<Movie[]>;
+
+    /**
+     * Obtiene las películas aplicando los filtros recibidos del cliente.
+     */
+    findFiltered(filters: MovieFilterDto): Promise<Movie[]>;
+
+    /**
+     * Obtiene las películas disponibles en una ciudad (scope CITY de esa
+     * ciudad o scope COUNTRY del país al que pertenece).
+     */
+    findAvailableInCity(cityId: number, countryId: number): Promise<Movie[]>;
 }
