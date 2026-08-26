@@ -10,9 +10,8 @@ import sequelize from "../config/database";
  * `roomId` y `formatId` se guardan como enteros sin FK
  * (las tablas rooms/formats aún no se crean).
  *
- * Nota: en el MER `id` y `movie_id` son UUID; el model `Movie`
- * actual usa INTEGER, así que `movieId` queda como INTEGER
- * para que la FK sea compatible con la tabla `movies` existente.
+ * Los identificadores de las funciones y películas son enteros para mantener
+ * consistencia con las demás entidades del proyecto.
  */
 
 export interface ShowtimeAttributes {
@@ -54,8 +53,8 @@ class Showtime
 Showtime.init(
   {
     id: {
-      type: DataTypes.UUID,
-      defaultValue: DataTypes.UUIDV4,
+      type: DataTypes.INTEGER,
+      autoIncrement: true,
       primaryKey: true,
     },
     movieId: {

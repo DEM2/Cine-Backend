@@ -7,6 +7,7 @@ import Movie, { MovieCreationAttributes } from "../models/movie.model";
 
 import { IMovieService } from "../services/interfaces/movie.service.interface"
 import Showtime from "../models/showtime.model";
+import { FunctionFilterDto } from "../dto/funtion/funtion-filter.dto";
 
 /**
  * Servicio de Movie
@@ -53,13 +54,30 @@ class MovieService implements IMovieService {
         return movie;
     }
 
-    async findFunctions(movieId: number): Promise<Showtime[]> {
+    async findFunctions(
+        movieId: number,
+        filters: FunctionFilterDto = {}
+    ): Promise<Showtime[]> {
         await this.findById(movieId);
-        const showtimes = await repository.findFunctionsByMovieId(movieId);
-        if (!showtimes) {
-            throw new AppError(404, "No se encontraron funciones para la película.");
+
+        if (filters.date) {
+            const selectedDate = new Date(`${filters.date}T00:00:00-05:00`);
+            if (Number.isNaN(selectedDate.getTime())) {
+                throw new AppError(400, "La fecha enviada no es válida.");
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const lastAvailableDate = new Date(today);
+            lastAvailableDate.setDate(lastAvailableDate.getDate() + 7);
+
+            if (selectedDate < today || selectedDate > lastAvailableDate) {
+                throw new AppError(400, "Solo puedes consultar funciones desde hoy hasta los próximos 7 días.");
+            }
         }
-        return showtimes;
+
+        return await repository.findFunctionsByMovieId(movieId, filters);
     }
 
     async findRecommendedMovies(id: number): Promise<Movie[]> {
