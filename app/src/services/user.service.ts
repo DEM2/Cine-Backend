@@ -44,18 +44,26 @@ class UserService implements IUserService {
      * Se utiliza para comprobar que el complejo favorito
      * seleccionado por el usuario realmente exista.
      */
-    private cinemaComplexRepository = new CinemaComplexRepository();
+    private cinemaComplexRepository =
+        new CinemaComplexRepository();
 
     /**
      * Crear un nuevo usuario.
      */
-    async create(dto: CreateUserDto): Promise<UserResponseDto> {
+    async create(
+        dto: CreateUserDto
+    ): Promise<UserResponseDto> {
 
         // 1. Validar CAPTCHA
-        await captchaService.verify(dto.captchaToken);
+        await captchaService.verify(
+            dto.captchaToken
+        );
 
         // 2. Verificar que los correos coincidan
-        if (dto.email !== dto.email_confirmation) {
+        if (
+            dto.email !==
+            dto.email_confirmation
+        ) {
             throw new AppError(
                 400,
                 "Los correos electrónicos no coinciden"
@@ -63,7 +71,10 @@ class UserService implements IUserService {
         }
 
         // 3. Verificar que las contraseñas coincidan
-        if (dto.password !== dto.password_confirmation) {
+        if (
+            dto.password !==
+            dto.password_confirmation
+        ) {
             throw new AppError(
                 400,
                 "Las contraseñas no coinciden"
@@ -74,7 +85,9 @@ class UserService implements IUserService {
         const passwordRegex =
             /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z\d]).{10,}$/;
 
-        if (!passwordRegex.test(dto.password)) {
+        if (
+            !passwordRegex.test(dto.password)
+        ) {
             throw new AppError(
                 400,
                 "La contraseña debe tener mínimo 10 caracteres, una mayúscula, una minúscula, un número y un carácter especial"
@@ -98,7 +111,10 @@ class UserService implements IUserService {
         }
 
         // 7. Verificar si el correo ya existe
-        const existingUser = await repository.findByEmail(dto.email);
+        const existingUser =
+            await repository.findByEmail(
+                dto.email
+            );
 
         if (existingUser) {
             throw new AppError(
@@ -121,7 +137,10 @@ class UserService implements IUserService {
         }
 
         // 9. Validar que la ciudad exista
-        const city = await cityRepository.findById(dto.city_id);
+        const city =
+            await cityRepository.findById(
+                dto.city_id
+            );
 
         if (!city) {
             throw new AppError(
@@ -130,13 +149,16 @@ class UserService implements IUserService {
             );
         }
 
-        // 10. Validar complejo favorito si fue seleccionado
+        // 10. Validar complejo favorito
+        // si fue seleccionado
         if (dto.favorite_complex_id) {
 
             const complex =
-                await this.cinemaComplexRepository.findById(
-                    dto.favorite_complex_id
-                );
+                await this
+                    .cinemaComplexRepository
+                    .findById(
+                        dto.favorite_complex_id
+                    );
 
             if (!complex) {
                 throw new AppError(
@@ -148,94 +170,19 @@ class UserService implements IUserService {
 
         // 11. Obtener el rol por defecto
         const role =
-            await roleRepository.findOrCreateByName(
-                DEFAULT_ROLE_NAME
-            );
+            await roleRepository
+                .findOrCreateByName(
+                    DEFAULT_ROLE_NAME
+                );
 
-        /**
-         * 12. Crear usuario
-         *
-         * Se utiliza "password" porque ese es el nombre
-         * del atributo en el modelo User.
-         *
-         * El modelo User se encarga automáticamente de
-         * encriptar la contraseña mediante el hook beforeCreate.
-         */
-        const user = await repository.create({
-            email: dto.email,
-            password: dto.password,
-
-            documentTypeId: dto.document_type_id,
-            documentNumber: dto.document_number,
-
-            firstName: dto.first_name,
-            lastName: dto.last_name,
-
-            birthDate: dto.birth_date,
-            gender: dto.gender,
-
-            phone: dto.phone,
-            address: dto.address,
-
-            cityId: dto.city_id,
-            roleId: role.id,
-
-            isVerified: false,
-
-            failedLoginAttempts: 0,
-            lockoutUntil: null,
-
-            status: "INACTIVO",
-
-            favoriteComplexId:
-                dto.favorite_complex_id,
-        });
-
-        // 13. Guardar consentimiento de tratamiento de datos
-        await UserConsent.create({
-            userId: user.id,
-            consentType: "data_processing",
-            accepted: dto.data_processing_consent,
-            acceptedAt: new Date(),
-        });
-
-        // 14. Guardar consentimiento de términos y condiciones
-        await UserConsent.create({
-            userId: user.id,
-            consentType: "terms_and_conditions",
-            accepted: dto.terms_and_conditions,
-            acceptedAt: new Date(),
-        });
-
-        // 15. Guardar consentimiento de comunicaciones comerciales
-        await UserConsent.create({
-            userId: user.id,
-            consentType: "commercial_communications",
-            accepted: dto.commercial_communications ?? false,
-            acceptedAt: dto.commercial_communications
-                ? new Date()
-                : undefined,
-        });
-
-        // 16. Crear preferencias de notificaciones
-        await UserNotificationPreference.create({
-            userId: user.id,
-
-            // Correos relacionados con la cuenta
-            transactionalEmail: true,
-
-            // Correos promocionales según consentimiento
-            promotionalEmail:
-                dto.commercial_communications ?? false,
-
-            // No se solicitan durante el registro
-            sms: false,
-            push: false,
-        });
-
-        // 17. Buscar nivel de membresía BASICO
+        // 12. Buscar el nivel de membresía BASICO
+        // ANTES de crear el usuario.
+        //
+        // Esto evita crear parcialmente un usuario
+        // si la configuración de membresía no existe.
         const level =
-            await membershipLevelRepository.findByName("BASICO");
+            await membershipLevelRepository
+                .findByName("BASICO");
 
         if (!level) {
             throw new AppError(
@@ -244,23 +191,186 @@ class UserService implements IUserService {
             );
         }
 
-        console.log("USUARIO CREADO:", user.id);
-        console.log("NIVEL ENCONTRADO:", level.id, level.name);
+        /**
+         * 13. Crear usuario
+         *
+         * Se utiliza "password" porque ese es
+         * el nombre del atributo en el modelo User.
+         *
+         * El modelo User se encarga automáticamente
+         * de encriptar la contraseña mediante
+         * el hook beforeCreate.
+         */
+        const user =
+            await repository.create({
+                email: dto.email,
 
+                password:
+                    dto.password,
+
+                documentTypeId:
+                    dto.document_type_id,
+
+                documentNumber:
+                    dto.document_number,
+
+                firstName:
+                    dto.first_name,
+
+                lastName:
+                    dto.last_name,
+
+                birthDate:
+                    dto.birth_date,
+
+                gender:
+                    dto.gender,
+
+                phone:
+                    dto.phone,
+
+                address:
+                    dto.address,
+
+                cityId:
+                    dto.city_id,
+
+                roleId:
+                    role.id,
+
+                // El correo todavía
+                // no ha sido verificado.
+                isVerified: false,
+
+                // No existen intentos
+                // fallidos inicialmente.
+                failedLoginAttempts: 0,
+
+                // La cuenta inicialmente
+                // no está bloqueada.
+                lockoutUntil: null,
+
+                // La cuenta permanece inactiva
+                // hasta confirmar el correo.
+                status: "INACTIVO",
+
+                favoriteComplexId:
+                    dto.favorite_complex_id,
+            });
+
+        // 14. Guardar consentimiento
+        // de tratamiento de datos
+        await UserConsent.create({
+            userId:
+                user.id,
+
+            consentType:
+                "data_processing",
+
+            accepted:
+                dto.data_processing_consent,
+
+            acceptedAt:
+                new Date(),
+        });
+
+        // 15. Guardar consentimiento
+        // de términos y condiciones
+        await UserConsent.create({
+            userId:
+                user.id,
+
+            consentType:
+                "terms_and_conditions",
+
+            accepted:
+                dto.terms_and_conditions,
+
+            acceptedAt:
+                new Date(),
+        });
+
+        // 16. Guardar consentimiento
+        // de comunicaciones comerciales
+        await UserConsent.create({
+            userId:
+                user.id,
+
+            consentType:
+                "commercial_communications",
+
+            accepted:
+                dto.commercial_communications
+                ?? false,
+
+            acceptedAt:
+                dto.commercial_communications
+                    ? new Date()
+                    : undefined,
+        });
+
+        // 17. Crear preferencias
+        // de notificaciones
+        await UserNotificationPreference.create({
+            userId:
+                user.id,
+
+            // Correos relacionados
+            // con la cuenta.
+            transactionalEmail:
+                true,
+
+            // Correos promocionales
+            // según consentimiento.
+            promotionalEmail:
+                dto.commercial_communications
+                ?? false,
+
+            // No se solicitan
+            // durante el registro.
+            sms:
+                false,
+
+            push:
+                false,
+        });
+
+        console.log(
+            "USUARIO CREADO:",
+            user.id
+        );
+
+        console.log(
+            "NIVEL ENCONTRADO:",
+            level.id,
+            level.name
+        );
 
         // 18. Crear membresía automáticamente
         await membershipService.create(
             user.id,
             level.id
         );
-        console.log("MEMBRESIA CREADA");
 
+        console.log(
+            "MEMBRESIA CREADA"
+        );
 
-        // 19. Crear token de verificación de correo
-        const token = await emailVerificationService.createVerificationToken(user.id);
-        console.log("TOKEN DE VERIFICACIÓN:", token);
+        // 19. Crear token
+        // de verificación de correo
+        const token =
+            await emailVerificationService
+                .createVerificationToken(
+                    user.id
+                );
 
-        // 20. Convertir usuario al DTO de respuesta
+        console.log(
+            "TOKEN DE VERIFICACIÓN:",
+            token
+        );
+
+        // 20. Convertir usuario
+        // al DTO de respuesta
         return this.toResponseDto(
             user,
             role.name
@@ -283,11 +393,14 @@ class UserService implements IUserService {
     ): UserResponseDto {
 
         return {
-            id: user.id,
+            id:
+                user.id,
 
-            name: `${user.firstName} ${user.lastName}`,
+            name:
+                `${user.firstName} ${user.lastName}`,
 
-            email: user.email,
+            email:
+                user.email,
 
             document_type_id:
                 user.documentTypeId,

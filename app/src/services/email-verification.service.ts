@@ -8,11 +8,13 @@ class EmailVerificationService {
     async createVerificationToken(userId: number) {
 
         // Genera un token aleatorio de 32 bytes.
-        // Un byte es una pequeña unidad de datos que podemos utilizar para generar información aleatoria.
-        // luego los comvierte a texto hexadecimal para obtener el token de verificacion
-        const token = crypto.randomBytes(32).toString("hex");
+        // Luego lo convierte a texto hexadecimal.
+        const token = crypto
+            .randomBytes(32)
+            .toString("hex");
 
-        // Convertimos el token en SHA-256 para guardarlo en la BD.
+        // Convertimos el token en SHA-256
+        // para guardar solamente el hash en la BD.
         const tokenHash = crypto
             .createHash("sha256")
             .update(token)
@@ -30,32 +32,30 @@ class EmailVerificationService {
             expiresAt
         });
 
-        // Devolvemos el token original para poder enviarlo por correo.
+        // Devolvemos el token original
+        // para poder enviarlo por correo.
         return token;
     }
 
     /**
      * Verifica el correo electrónico de un usuario.
      */
-    // recibe el token en forma se texto
     async verify(token: string) {
 
-        // Convertimos el token recibido en su hash.
-        // crypto trabaja con operaciones criptograficas
+        // Convertimos el token recibido en SHA-256
+        // para compararlo con el almacenado en la BD.
         const tokenHash = crypto
-            // se crea el hash utilizando el algoritmo (sha256)
             .createHash("sha256")
-            // usa el token como informacion para generar el hash
             .update(token)
-            // termina de calcular el hash y da el resultado como texto hexadecimal
-            // caracteres como (0 1 2 3 4 5 6 7 8 9 a b c d e f)
             .digest("hex");
 
-        // Buscamos el token en la base de datos.
+        // Buscar el token en la base de datos.
         const verification =
-            await emailVerificationRepository.findByTokenHash(tokenHash);
+            await emailVerificationRepository.findByTokenHash(
+                tokenHash
+            );
 
-        // Si no existe, el token no es válido.
+        // El token no existe.
         if (!verification) {
             throw new AppError(
                 400,
@@ -63,8 +63,7 @@ class EmailVerificationService {
             );
         }
 
-        // Verificamos si el token ya fue utilizado.
-        // usedAt cuando el token no se ha utilizado es null y cuando se utilizo (usedAt = 2026-08-12 02:30:15)
+        // Verificar si el token ya fue utilizado.
         if (verification.usedAt) {
             throw new AppError(
                 400,
@@ -72,8 +71,7 @@ class EmailVerificationService {
             );
         }
 
-        // Verificamos si el token ya expiró.
-        // fecha y hora actual y la fecha que se guardo cuando se creo el token
+        // Verificar si el token expiró.
         if (new Date() > verification.expiresAt) {
             throw new AppError(
                 400,
@@ -81,8 +79,10 @@ class EmailVerificationService {
             );
         }
 
-        // Buscamos al usuario relacionado con el token.
-        const user = await User.findByPk(verification.userId);
+        // Buscar usuario relacionado con el token.
+        const user = await User.findByPk(
+            verification.userId
+        );
 
         if (!user) {
             throw new AppError(
@@ -91,18 +91,23 @@ class EmailVerificationService {
             );
         }
 
-        // Activamos la cuenta.
+        // Marcar el correo como verificado.
+        user.isVerified = true;
+
+        // Activar la cuenta.
         user.status = "ACTIVO";
 
         await user.save();
 
-        // Marcamos el token como utilizado.
-        // ejecuta la funcion que marca la verificacion como utilizada
-        // lo guarda en la variable para que no se vuelva a utilizar 
-        await emailVerificationRepository.markAsUsed(verification);
+        // Marcar el token como utilizado
+        // para impedir que se vuelva a usar.
+        await emailVerificationRepository.markAsUsed(
+            verification
+        );
 
         return {
-            message: "Correo electrónico verificado correctamente"
+            message:
+                "Correo electrónico verificado correctamente"
         };
     }
 }

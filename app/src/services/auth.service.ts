@@ -1,11 +1,11 @@
-import jwt from 'jsonwebtoken';
-import bcrypt from 'bcrypt';
+import jwt from "jsonwebtoken";
+import bcrypt from "bcrypt";
 
-import User from '../models/user.model';
-import { RefreshToken } from '../models/refreshToken.model';
-import { Audit } from '../models/audit.model';
-import Membership from '../models/membership.model';
-import { Benefit } from '../models/benefit.model';
+import User from "../models/user.model";
+import { RefreshToken } from "../models/refreshToken.model";
+import { Audit } from "../models/audit.model";
+import Membership from "../models/membership.model";
+import { Benefit } from "../models/benefit.model";
 
 export class AuthService {
 
@@ -26,26 +26,52 @@ export class AuthService {
         });
 
         if (!user) {
-            throw new Error('Credenciales inválidas');
+            throw new Error("Credenciales inválidas");
         }
 
-        // 2. Verificar si la cuenta está bloqueada
+        // 2. Verificar que el correo haya sido confirmado
+        if (!user.isVerified) {
+            throw new Error(
+                "Debes verificar tu correo electrónico antes de iniciar sesión"
+            );
+        }
+
+        // 3. Verificar que la cuenta esté activa
+        if (user.status !== "ACTIVO") {
+            throw new Error(
+                "La cuenta no se encuentra activa"
+            );
+        }
+
+        // 4. Verificar si la cuenta continúa bloqueada
         if (
             user.lockoutUntil &&
             user.lockoutUntil.getTime() > Date.now()
         ) {
             throw new Error(
-                'Cuenta bloqueada. Intenta de nuevo en 15 minutos.'
+                "Cuenta bloqueada. Intenta de nuevo en 15 minutos."
             );
         }
 
-        // 3. Validar contraseña
+        // 5. Si el tiempo de bloqueo ya terminó,
+        // reiniciar los intentos fallidos
+        if (
+            user.lockoutUntil &&
+            user.lockoutUntil.getTime() <= Date.now()
+        ) {
+            user.failedLoginAttempts = 0;
+            user.lockoutUntil = null;
+
+            await user.save();
+        }
+
+        // 6. Validar contraseña
         const isValid = await bcrypt.compare(
             password,
             user.password
         );
 
-        // 4. Contraseña incorrecta
+        // 7. Contraseña incorrecta
         if (!isValid) {
 
             user.failedLoginAttempts += 1;
@@ -65,53 +91,53 @@ export class AuthService {
             // Registrar intento fallido
             await Audit.create({
                 userId: user.id,
-                event: 'LOGIN_FAILED',
+                event: "LOGIN_FAILED",
                 ip,
                 device
             });
 
-            throw new Error('Credenciales inválidas');
+            throw new Error("Credenciales inválidas");
         }
 
-        // 5. Contraseña correcta
-        // Reiniciar los intentos fallidos
+        // 8. Contraseña correcta
+        // Reiniciar intentos fallidos y bloqueo
         user.failedLoginAttempts = 0;
         user.lockoutUntil = null;
 
         await user.save();
 
-        // 6. Crear payload para los tokens
+        // 9. Crear payload para los tokens
         const payload = {
             userId: user.id,
             roleId: user.roleId
         };
 
-        // 7. Crear Access Token
+        // 10. Crear Access Token
         const accessToken = jwt.sign(
             payload,
             process.env.JWT_ACCESS_SECRET!,
             {
-                expiresIn: '15m'
+                expiresIn: "15m"
             }
         );
 
-        // 8. Crear Refresh Token
+        // 11. Crear Refresh Token
         const refreshToken = jwt.sign(
             payload,
             process.env.JWT_REFRESH_SECRET!,
             {
-                expiresIn: '7d'
+                expiresIn: "7d"
             }
         );
 
-        // 9. Eliminar Refresh Tokens anteriores
+        // 12. Eliminar Refresh Tokens anteriores
         await RefreshToken.destroy({
             where: {
                 userId: user.id
             }
         });
 
-        // 10. Guardar nuevo Refresh Token
+        // 13. Guardar nuevo Refresh Token
         await RefreshToken.create({
             userId: user.id,
             token: refreshToken,
@@ -120,30 +146,30 @@ export class AuthService {
             )
         });
 
-        // 11. Registrar acceso exitoso
+        // 14. Registrar acceso exitoso
         await Audit.create({
             userId: user.id,
-            event: 'LOGIN_SUCCESS',
+            event: "LOGIN_SUCCESS",
             ip,
             device
         });
 
-        // 12. Buscar membresía del usuario
+        // 15. Buscar membresía del usuario
         const membership = await Membership.findOne({
             where: {
                 userId: user.id
             }
         });
 
-        // 13. Buscar beneficios activos
+        // 16. Buscar beneficios activos
         const activeBenefits = await Benefit.findAll({
             where: {
                 userId: user.id,
-                status: 'active'
+                status: "active"
             }
         });
 
-        // 14. Retornar información del usuario
+        // 17. Retornar información del usuario
         return {
             accessToken,
             refreshToken,
