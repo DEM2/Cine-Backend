@@ -39,6 +39,7 @@ const options = {
   apis: ["./src/routes/*.ts"],// Escanea las rutas para extraer anotaciones Swagger
 };
 
+
 /**
  * Esquema de especificación Swagger/OpenAPI generado dinámicamente.
  * Este objeto es exportado y utilizado por `swagger-ui-express`.
