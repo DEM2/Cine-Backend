@@ -20,7 +20,7 @@ import UserNotificationPreference from "../models/user-notification-preference.m
 /**
  * Rol asignado por defecto a los usuarios registrados.
  */
-const DEFAULT_ROLE_NAME = "MIEMBRO";
+const DEFAULT_ROLE_NAME = "Miembro";
 
 /**
  * Servicio de Usuarios
