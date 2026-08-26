@@ -2,6 +2,8 @@
 
 import User, { UserCreationAttributes } from "../models/user.model";
 import { IUserRepository } from "./interfaces/user.repository.interface";
+import Membership from "../models/membership.model";
+import MembershipLevel from "../models/membership-level.model";
 
 /**
  * Repositorio de Usuarios
@@ -19,6 +21,8 @@ class UserRepository implements IUserRepository {
      */
     async create(data: UserCreationAttributes): Promise<User> {
 
+        // crea un nuevo usuario en la base de datos usando los datos de data
+        // espera que se cree el usuario y lo devuelve creado
         return await User.create(data);
 
     }
@@ -27,10 +31,28 @@ class UserRepository implements IUserRepository {
      * Obtiene todos los usuarios.
      */
     async findAll(): Promise<User[]> {
+        // sequealize consulta la tabla users
+        return await User.findAll({
+            // ademas de los datos del usuario, trae informacion de otras tablas
+            // que estan relacionadas con el 
+            include: [
+                {
+                    // Incluye la membresía asociada al usuario.
+                    model: Membership,
+                    as: "membership",
 
-        return await User.findAll();
-
-    }
+                    // Incluye el nivel de esa membresía.
+                    include: [
+                        {
+                            model: MembershipLevel,
+                            as: "level"
+                        }
+                    ]
+                }
+            ]
+        });
+    }   
+    
      async findByEmail(email: string): Promise<User | null> {
       return await User.findOne({
         where: {
