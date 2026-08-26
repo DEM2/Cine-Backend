@@ -1,24 +1,22 @@
-import MembershipLevel from "../models/membership-level.model";
+import { QueryInterface } from "sequelize";
 
-export async function seedMembershipLevels() {
+export default {
+  async up(queryInterface: QueryInterface) {
+    await queryInterface.bulkInsert("membership_levels", [
+      {
+        name: "BASICO",
+        description: "Nivel de membresía básico asignado a los nuevos usuarios",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      },
+    ], {
+      ignoreDuplicates: true
+    } as any);
+  },
 
-    const existingBasicLevel =
-        await MembershipLevel.findOne({
-            where: {
-                name: "BASICO"
-            }
-        });
-
-    if (!existingBasicLevel) {
-
-        await MembershipLevel.create({
-            name: "BASICO",
-            description:
-                "Nivel de membresía básico asignado a los nuevos usuarios"
-        });
-
-        console.log(
-            "Nivel de membresía BASICO creado correctamente"
-        );
-    }
-}
+  async down(queryInterface: QueryInterface) {
+    await queryInterface.bulkDelete("membership_levels", {
+      name: ["BASICO"]
+    }, {});
+  },
+};
