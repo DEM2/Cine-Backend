@@ -17,6 +17,9 @@ const router = Router();
  * Obtiene el mapa de sillas habilitadas de una función con su estado
  * (disponible o bloqueada) y su precio calculado.
  *
+ * Solo se consideran bloqueos VIGENTES: si un bloqueo expiró, la silla
+ * aparece como disponible de inmediato (expiración perezosa, RN-040/RN-041).
+ *
  * Response:
  *  - 200 OK: Lista de sillas de la función.
  *  - 404 Not Found: La función no existe.

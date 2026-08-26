@@ -5,18 +5,12 @@ export default {
     await queryInterface.bulkInsert('roles', [
       {
         id: 1,
-        name: 'Visitante',
+        name: 'Miembro',
         createdAt: new Date(),
         updatedAt: new Date(),
       },
       {
         id: 2,
-        name: 'Usuario',
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      },
-      {
-        id: 3,
         name: 'Administrador',
         createdAt: new Date(),
         updatedAt: new Date(),

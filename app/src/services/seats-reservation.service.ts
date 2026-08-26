@@ -3,6 +3,7 @@
 import { Op, UniqueConstraintError } from "sequelize";
 import sequelize from "../config/database";
 import AppError from "../error/appError";
+import { MAX_TICKETS_PER_SHOWTIME, SEAT_LOCK_TTL_MINUTES } from "../config/seat-lock.config";
 import Showtime from "../models/showtime.model";
 import Seat from "../models/complex/seat.model";
 import SeatType from "../models/complex/seat-type.model";
@@ -97,46 +98,72 @@ class ReservationService implements IReservationService {
       }
     }
 
-    const locked = await cartSeatRepository.findLockedByShowtime(dto.showtimeId);
-    const mine = locked.filter((lock) => lock.cartId === dto.cartId);
-    const mineSeatIds = new Set(mine.map((lock) => lock.seatId));
-    const othersLockedBySeat = new Map(
-      locked
-        .filter((lock) => lock.cartId !== dto.cartId)
-        .map((lock) => [lock.seatId, lock.cartId])
-    );
-
-    const conflict = seatIds.find((seatId) => othersLockedBySeat.has(seatId));
-    if (conflict) {
-      throw new AppError(409, "Una o más sillas ya están bloqueadas.");
-    }
-
-    const toInsert = seatIds.filter((seatId) => !mineSeatIds.has(seatId));
-
-    if (toInsert.length === 0) {
-      const total = mine.reduce((sum, seat) => sum + Number(seat.price), 0);
-      return { seats: mine, total };
-    }
-
-    const rows = toInsert.map((seatId) => {
+    const priceFor = (seatId: number): number => {
       const seat = seatMap.get(seatId)!;
-      return {
+      return Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0);
+    };
+
+    // Toda la verificación de vigencia/conflictos y la inserción se hacen
+    // dentro de UNA transacción para evitar sobreventas por concurrencia.
+    const transaction = await sequelize.transaction();
+    try {
+      // Higiene: purga bloqueos expirados (incluye legacy sin expires_at)
+      // antes de evaluar conflictos, para que las sillas liberadas
+      // vuelvan a estar disponibles de inmediato.
+      await cartSeatRepository.deleteExpired({ transaction });
+
+      const locked = await cartSeatRepository.findLockedByShowtime(dto.showtimeId, { transaction });
+      const mine = locked.filter((lock) => lock.cartId === dto.cartId);
+      const mineSeatIds = new Set(mine.map((lock) => lock.seatId));
+      const othersLockedBySeat = new Set(
+        locked
+          .filter((lock) => lock.cartId !== dto.cartId)
+          .map((lock) => lock.seatId)
+      );
+
+      const toInsert = seatIds.filter((seatId) => !mineSeatIds.has(seatId));
+
+      const conflict = seatIds.find((seatId) => othersLockedBySeat.has(seatId));
+      if (conflict !== undefined) {
+        throw new AppError(409, "Una o más sillas ya están bloqueadas.");
+      }
+
+      // Máximo de entradas por función (configurable vía .env).
+      if (mine.length + toInsert.length > MAX_TICKETS_PER_SHOWTIME) {
+        throw new AppError(
+          400,
+          `No puedes seleccionar más de ${MAX_TICKETS_PER_SHOWTIME} entradas para esta función.`
+        );
+      }
+
+      if (toInsert.length === 0) {
+        await transaction.commit();
+        const total = mine.reduce((sum, seat) => sum + Number(seat.price), 0);
+        return { seats: mine, total };
+      }
+
+      /**
+       * Semántica del timer (RN-039): el tiempo inicia con el PRIMER bloqueo
+       * del carrito para esta función y NO se extiende con bloqueos posteriores.
+       * Los nuevos locks heredan el mismo expiresAt.
+       */
+      const cartExpiresAt =
+        mine[0]?.expiresAt ?? new Date(Date.now() + SEAT_LOCK_TTL_MINUTES * 60_000);
+
+      const rows = toInsert.map((seatId) => ({
         cartId: dto.cartId,
         showtimeId: dto.showtimeId,
         seatId,
-        price: Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0),
-      };
-    });
+        price: priceFor(seatId),
+        expiresAt: cartExpiresAt,
+      }));
 
-    const transaction = await sequelize.transaction();
-    try {
-      const created = await cartSeatRepository.lockSeats(rows, {
-        transaction,
-      });
+      const created = await cartSeatRepository.lockSeats(rows, { transaction });
       await transaction.commit();
-      const seats = [...mine, ...created];
-      const total = seats.reduce((sum, seat) => sum + Number(seat.price), 0);
-      return { seats, total };
+
+      const seatsResult = [...mine, ...created];
+      const total = seatsResult.reduce((sum, seat) => sum + Number(seat.price), 0);
+      return { seats: seatsResult, total };
     } catch (error: any) {
       await transaction.rollback();
       if (error instanceof UniqueConstraintError) {
