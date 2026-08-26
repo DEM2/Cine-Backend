@@ -1,4 +1,4 @@
-import { Transaction } from "sequelize";
+import { Op, Transaction } from "sequelize";
 import CartSeat, { CartSeatCreationAttributes } from "../../models/reservations/cart-seat.model";
 
 /**
@@ -26,7 +26,28 @@ export interface ICartSeatRepository {
   ): Promise<number>;
 
   /**
-   * Obtiene todos los bloqueos existentes de una función.
+   * Obtiene los bloqueos VIGENTES (no expirados) de una función.
+   * Las filas con `expiresAt` nulo (legacy) o vencido se consideran expiradas.
+   * Puede ejecutarse dentro de una transacción.
    */
-  findLockedByShowtime(showtimeId: number): Promise<CartSeat[]>;
+  findLockedByShowtime(
+    showtimeId: number,
+    options?: { transaction?: Transaction }
+  ): Promise<CartSeat[]>;
+
+  /**
+   * Obtiene los bloqueos vigentes de un carrito para una función.
+   * Puede ejecutarse dentro de una transacción.
+   */
+  findValidByCartAndShowtime(
+    cartId: number,
+    showtimeId: number,
+    options?: { transaction?: Transaction }
+  ): Promise<CartSeat[]>;
+
+  /**
+   * Elimina físicamente todos los bloqueos expirados (o legacy sin expiración).
+   * Usado por el cronjob de purga (RN-040) y como higiene al bloquear.
+   */
+  deleteExpired(options?: { transaction?: Transaction }): Promise<number>;
 }

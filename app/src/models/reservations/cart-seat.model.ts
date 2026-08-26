@@ -12,7 +12,7 @@ export interface CartSeatAttributes {
   price: number;
   lockedAt: Date;
   /**
-   * Momento en el que expira el bloqueo (RN-039/RN-040).
+   * Momento en el que expira el bloqueo
    * Es el mismo para todas las sillas de un mismo carrito+función:
    * se fija con el primer bloqueo y NO se extiende con bloqueos posteriores.
    */
