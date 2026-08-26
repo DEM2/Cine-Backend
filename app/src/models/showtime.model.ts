@@ -117,8 +117,7 @@ Showtime.init(
     modelName: "Showtime",
     tableName: "showtimes",
     timestamps: true,
-    updatedAt: false,
-    createdAt: "created_at",
+
   }
   
 );

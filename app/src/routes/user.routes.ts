@@ -174,5 +174,3 @@ router.post("/", createUser);
 router.get("/", getUsers);
 
 export default router;
-
-

@@ -19,6 +19,7 @@ import cityRoutes from "./routes/city.routes";
 import authRoutes from './routes/auth.routes';
 import cinemaComplexRoutes from "./routes/cinema.complex.routes";
 import functionRoutes from "./routes/function.routes";
+import reservationRoutes from "./routes/seat-reservation.routes";
 
 
 const app = express();
@@ -36,6 +37,7 @@ app.use("/api/cities", cityRoutes);
 app.use('/auth', authRoutes);
 app.use("/api/complex", cinemaComplexRoutes);
 app.use("/api/functions", functionRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 // Swagger
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
