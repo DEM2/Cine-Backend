@@ -11,12 +11,18 @@ export interface CartSeatAttributes {
   seatId: number;
   price: number;
   lockedAt: Date;
+  /**
+   * Momento en el que expira el bloqueo (RN-039/RN-040).
+   * Es el mismo para todas las sillas de un mismo carrito+función:
+   * se fija con el primer bloqueo y NO se extiende con bloqueos posteriores.
+   */
+  expiresAt: Date | null;
 }
 
 /**
  * Atributos utilizados para la creación de una nueva `CartSeat`.
  */
-export interface CartSeatCreationAttributes extends Optional<CartSeatAttributes, "id" | "lockedAt"> {}
+export interface CartSeatCreationAttributes extends Optional<CartSeatAttributes, "id" | "lockedAt" | "expiresAt"> {}
 
 class CartSeat  extends Model<CartSeatAttributes, CartSeatCreationAttributes> implements CartSeatAttributes
 {
@@ -26,6 +32,7 @@ class CartSeat  extends Model<CartSeatAttributes, CartSeatCreationAttributes> im
   public seatId!: number;
   public price!: number;
   public readonly lockedAt!: Date;
+  public expiresAt!: Date | null;
 }
 
 CartSeat.init(
@@ -68,6 +75,11 @@ CartSeat.init(
       defaultValue: sequelize.literal("CURRENT_TIMESTAMP"),
       field: "locked_at",
     },
+    expiresAt: {
+      type: DataTypes.DATE(3),
+      allowNull: true,
+      field: "expires_at",
+    },
   },
   {
     sequelize,
@@ -83,6 +95,10 @@ CartSeat.init(
       {
         name: "idx_cart_seats_showtime",
         fields: ["showtime_id"],
+      },
+      {
+        name: "idx_cart_seats_expires_at",
+        fields: ["expires_at"],
       },
     ],
   },
