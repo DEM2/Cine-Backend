@@ -103,6 +103,22 @@ MovieLocation.init(
     modelName: "MovieLocation",
     tableName: "movie_locations",
     timestamps: true,
+    indexes: [
+      {
+        // Evita duplicar la disponibilidad NACIONAL de una misma película/país.
+        name: "uq_movie_country_scope",
+        unique: true,
+        fields: ["movie_id", "country_id"],
+        where: { scope: "COUNTRY" },
+      },
+      {
+        // Evita duplicar la disponibilidad POR CIUDAD de una misma película.
+        name: "uq_movie_city_scope",
+        unique: true,
+        fields: ["movie_id", "city_id"],
+        where: { scope: "CITY" },
+      },
+    ],
   }
 );
 

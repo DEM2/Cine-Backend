@@ -258,6 +258,7 @@ async findUpcoming(): Promise<Movie[]> {
  */
 async findAvailableInCity(cityId: number, countryId: number): Promise<Movie[]> {
     return await Movie.findAll({
+        where: { status: "ACTIVE" },
         include: [
             {
                 // Géneros de cada película (N:M a través de movie_genres).

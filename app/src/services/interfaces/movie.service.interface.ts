@@ -29,4 +29,10 @@ export interface IMovieService {
      */
     getFiltered(filters: MovieFilterDto): Promise<movie[]>;
 
+    /**
+     * Películas disponibles en una ciudad (distribución nacional del país
+     * de la ciudad o distribución puntual para la ciudad).
+     */
+    getAvailableInCity(cityId: number): Promise<movie[]>;
+
 }
