@@ -4,7 +4,7 @@
   "description": "API con Node, Express, TypeScript, Swagger, Jest y Sequelize para PostgreSQL",
   "main": "dist/index.js",
   "scripts": {
-    "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
+    "dev": "npx ts-node-dev --poll --respawn --transpile-only src/index.ts",
     "db:seed": "npx sequelize-cli db:seed:all",
     "build": "tsc",
     "start": "node dist/index.js",
