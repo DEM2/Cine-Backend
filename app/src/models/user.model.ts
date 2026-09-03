@@ -44,6 +44,9 @@ export interface UserAttributes {
     status: string;
 
     favoriteComplexId?: number | null;
+
+    photoUrl?: string | null;
+    pendingEmail?: string | null;
 }
 
 /**
@@ -55,7 +58,7 @@ export interface UserAttributes {
 export interface UserCreationAttributes
     extends Optional<
         UserAttributes,
-        "id" | "failedLoginAttempts" | "lockoutUntil"
+        "id" | "failedLoginAttempts" | "lockoutUntil"| "photoUrl" | "pendingEmail"
     > {}
 
 /**
@@ -163,6 +166,22 @@ class User
      * Complejo favorito.
      */
     public favoriteComplexId?: number | null;
+
+    /**
+     * Fotografía de perfil del usuario.
+     * 
+     * En PostgreSQL:
+     * photo_url
+     */
+    public photoUrl?: string | null;
+
+    /**
+     * Correo electrónico temporal pendiente de verificación.
+     * 
+     * En PostgreSQL:
+     * pending_email
+     */
+    public pendingEmail?: string | null;
 
     /**
      * Validar contraseña.
@@ -373,6 +392,28 @@ User.init(
             type: DataTypes.INTEGER,
             allowNull: true,
             field: "favorite_complex_id",
+        },
+        
+        /**
+         * Fotografía de perfil opcional.
+         * 
+         * Requisito de la HU-008
+         */
+        photoUrl: {
+            type: DataTypes.STRING(255),
+            allowNull: true,
+            field: "photo_url",
+        },
+
+        /**
+         * Correo temporal para procesos de actualización.
+         * 
+         * Requisito de la RN-034
+         */
+        pendingEmail: {
+            type: DataTypes.STRING(100),
+            allowNull: true,
+            field: "pending_email",
         },
     },
     {
