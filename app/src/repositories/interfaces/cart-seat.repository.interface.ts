@@ -50,4 +50,14 @@ export interface ICartSeatRepository {
    * Usado por el cronjob de purga (RN-040) y como higiene al bloquear.
    */
   deleteExpired(options?: { transaction?: Transaction }): Promise<number>;
+
+  /**
+   * Obtiene los bloqueos vigentes de un carrito para una función con
+   * los datos completos de la función (Showtime) y la silla (Seat).
+   * Usado para el resumen de reserva (GET /reservations/summary).
+   */
+  findValidByCartAndShowtimeWithDetails(
+    cartId: number,
+    showtimeId: number
+  ): Promise<any[]>;
 }
