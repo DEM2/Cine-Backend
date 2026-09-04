@@ -32,6 +32,19 @@ import MovieLocation from "./movie-location.model";
 import SeatType from "./complex/seat-type.model";
 import Seat from "./complex/seat.model";
 import CartSeat from "./reservations/cart-seat.model";
+import Purchase from "./purchase.model";
+
+// ... tus otras asociaciones ...
+
+/**
+ * Un usuario tiene muchas compras (relación uno a muchos).
+ */
+User.hasMany(Purchase, { foreignKey: "userId", as: "purchases" });
+
+/**
+ * Una compra pertenece a un único usuario (relación muchos a uno).
+ */
+Purchase.belongsTo(User, { foreignKey: "userId", as: "user" });
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -273,3 +286,4 @@ export { Seat };
 export { MovieCast };
 export { UpcomingMovieNotification };
 export { MovieLocation };
+export { Purchase };
