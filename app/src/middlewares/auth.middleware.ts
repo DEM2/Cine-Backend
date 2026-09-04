@@ -26,16 +26,16 @@ export const verifyToken = (req: Request, res: Response, next: NextFunction): vo
 
         const token = authHeader.split(" ")[1];
         
-        // Verifica que JWT_SECRET sea la misma variable de entorno que usas en auth.service.ts al loguear
-        const secret = process.env.JWT_SECRET || "tu_secreto_super_seguro"; 
+
+        const secret = process.env.JWT_ACCESS_SECRET || "tu_secreto_super_seguro"; 
 
         const decoded = jwt.verify(token, secret) as any;
 
         // Inyectamos el usuario en la request
         req.user = {
-            id: decoded.id,
+            id: decoded.userId,
             email: decoded.email,
-            role: decoded.role
+            role: decoded.roleId
         };
 
         next();
