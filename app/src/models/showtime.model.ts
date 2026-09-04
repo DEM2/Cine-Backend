@@ -70,11 +70,19 @@ Showtime.init(
       type: DataTypes.INTEGER,
       allowNull: false,
       field: "room_id",
+      references: {
+        model: "rooms",
+        key: "id",
+      },
     },
     formatId: {
       type: DataTypes.INTEGER,
       allowNull: false,
       field: "format_id",
+      references: {
+        model: "formats",
+        key: "id",
+      },
     },
     language: {
       type: DataTypes.STRING(30),

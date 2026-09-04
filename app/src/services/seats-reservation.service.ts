@@ -10,6 +10,7 @@ import cartSeatRepository from "../repositories/cart-seat.repository";
 import seatRepository from "../repositories/seat.repository";
 import { LockSeatsDto } from "../dto/reservations/lock-seats.dto";
 import { ReleaseSeatsDto } from "../dto/reservations/release-seats.dto";
+import functionService from "./funtion.service";
 import {
   IReservationService,
   LockSeatsResult,
@@ -28,8 +29,9 @@ type SeatWithType = Seat & { seatType: SeatType };
 class ReservationService implements IReservationService {
 
   async getShowtimeSeats(showtimeId: number): Promise<ShowtimeSeatDto[]> {
+    const functionPrice = await functionService.getPrice(showtimeId);
     const showtime = await Showtime.findByPk(showtimeId);
-    if (!showtime || !showtime.isActive) {
+    if (!showtime) {
       throw new AppError(404, "Función no encontrada.");
     }
 
@@ -55,7 +57,7 @@ class ReservationService implements IReservationService {
       status: lockedBySeat.has(seat.id) ? "locked" : "available",
       lockedByCartId: lockedBySeat.get(seat.id) ?? null,
       price:
-        Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0),
+        functionPrice.finalPrice + Number(seat.seatType?.extraCharge ?? 0),
     }));
   }
 
@@ -69,8 +71,9 @@ class ReservationService implements IReservationService {
       throw new AppError(400, "Debes indicar al menos una silla.");
     }
 
+    const functionPrice = await functionService.getPrice(dto.showtimeId);
     const showtime = await Showtime.findByPk(dto.showtimeId);
-    if (!showtime || !showtime.isActive) {
+    if (!showtime) {
       throw new AppError(404, "Función no encontrada.");
     }
 
@@ -124,7 +127,7 @@ class ReservationService implements IReservationService {
         cartId: dto.cartId,
         showtimeId: dto.showtimeId,
         seatId,
-        price: Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0),
+        price: functionPrice.finalPrice + Number(seat.seatType?.extraCharge ?? 0),
       };
     });
 

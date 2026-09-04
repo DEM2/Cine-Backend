@@ -8,7 +8,7 @@
 
 import { Router } from "express";
 import { getShowtimeSeats } from "../controllers/function.controller";
-import { getFunctionById } from "../controllers/funtion.controller";
+import { getFunctionById, getFunctionPrice } from "../controllers/funtion.controller";
 
 const router = Router();
 
@@ -77,6 +77,44 @@ const router = Router();
  *               error: "Error al obtener las sillas de la función"
  */
 router.get("/:id/seats", getShowtimeSeats);
+
+/**
+ * GET /functions/:id/prices
+ * -------------------------
+ * Obtiene el precio de entrada de una función, incluyendo los recargos
+ * configurados para su formato y su sala. El recargo por tipo de silla se
+ * consulta después en el mapa de sillas.
+ *
+ * @swagger
+ * /api/functions/{id}/prices:
+ *   get:
+ *     summary: Obtener el precio de una función
+ *     tags: [Functions]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Precio calculado exitosamente
+ *         content:
+ *           application/json:
+ *             example:
+ *               functionId: 1
+ *               currency: COP
+ *               basePrice: 18000
+ *               format: { id: 2, name: "3D", extraCharge: 3000 }
+ *               room: { id: 2, name: "Sala 2", extraCharge: 2000 }
+ *               totalExtraCharges: 5000
+ *               finalPrice: 23000
+ *       400:
+ *         description: La función ya inició o el ID no es válido
+ *       404:
+ *         description: La función no existe o no está disponible
+ */
+router.get("/:id/prices", getFunctionPrice);
 
 // app/src/routes/department.routes.ts
 
