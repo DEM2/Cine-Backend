@@ -375,9 +375,27 @@ export const getMovieById = async (_req: Request, res: Response): Promise<Respon
  */
 export const getMovieFunctions = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const { movieId, filters } = res.locals as {
-            movieId: number;
-            filters: FunctionFilterDto;
+        const movieId = Number(req.params.id);
+        const queryValue = (value: unknown): string | undefined =>
+            typeof value === "string" ? value : undefined;
+        const numberQueryValue = (value: unknown): number | undefined => {
+            const parsed = Number(queryValue(value));
+            return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+        };
+
+        const isSubtitled = queryValue(req.query.isSubtitled);
+        const filters: FunctionFilterDto = {
+            date: queryValue(req.query.date),
+            complexId: numberQueryValue(req.query.complexId),
+            roomId: numberQueryValue(req.query.roomId),
+            formatId: numberQueryValue(req.query.formatId),
+            language: queryValue(req.query.language),
+            isSubtitled:
+                isSubtitled === "true"
+                    ? true
+                    : isSubtitled === "false"
+                      ? false
+                      : undefined,
         };
 
         const functions = await movieService.findFunctions(movieId, filters);
