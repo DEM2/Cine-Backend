@@ -11,6 +11,8 @@ import cartSeatRepository from "../repositories/cart-seat.repository";
 import seatRepository from "../repositories/seat.repository";
 import { LockSeatsDto } from "../dto/reservations/lock-seats.dto";
 import { ReleaseSeatsDto } from "../dto/reservations/release-seats.dto";
+import { SummaryResponseDto } from "../dto/reservations/summary-response.dto";
+import functionService from "./funtion.service";
 import {
   IReservationService,
   LockSeatsResult,
@@ -29,8 +31,9 @@ type SeatWithType = Seat & { seatType: SeatType };
 class ReservationService implements IReservationService {
 
   async getShowtimeSeats(showtimeId: number): Promise<ShowtimeSeatDto[]> {
+    const functionPrice = await functionService.getPrice(showtimeId);
     const showtime = await Showtime.findByPk(showtimeId);
-    if (!showtime || !showtime.isActive) {
+    if (!showtime) {
       throw new AppError(404, "Función no encontrada.");
     }
 
@@ -56,7 +59,7 @@ class ReservationService implements IReservationService {
       status: lockedBySeat.has(seat.id) ? "locked" : "available",
       lockedByCartId: lockedBySeat.get(seat.id) ?? null,
       price:
-        Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0),
+        functionPrice.finalPrice + Number(seat.seatType?.extraCharge ?? 0),
     }));
   }
 
@@ -70,8 +73,9 @@ class ReservationService implements IReservationService {
       throw new AppError(400, "Debes indicar al menos una silla.");
     }
 
+    const functionPrice = await functionService.getPrice(dto.showtimeId);
     const showtime = await Showtime.findByPk(dto.showtimeId);
-    if (!showtime || !showtime.isActive) {
+    if (!showtime) {
       throw new AppError(404, "Función no encontrada.");
     }
 
@@ -97,11 +101,6 @@ class ReservationService implements IReservationService {
         );
       }
     }
-
-    const priceFor = (seatId: number): number => {
-      const seat = seatMap.get(seatId)!;
-      return Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0);
-    };
 
     // Toda la verificación de vigencia/conflictos y la inserción se hacen
     // dentro de UNA transacción para evitar sobreventas por concurrencia.
@@ -154,7 +153,9 @@ class ReservationService implements IReservationService {
         cartId: dto.cartId,
         showtimeId: dto.showtimeId,
         seatId,
-        price: priceFor(seatId),
+        price:
+          functionPrice.finalPrice +
+          Number(seatMap.get(seatId)!.seatType?.extraCharge ?? 0),
         expiresAt: cartExpiresAt,
       }));
 
@@ -193,6 +194,46 @@ class ReservationService implements IReservationService {
     }
 
     return deleted;
+  }
+
+  async getReservationSummary(cartId: number, showtimeId: number): Promise<SummaryResponseDto> {
+    if (!cartId || !showtimeId) {
+      throw new AppError(400, "cartId y showtimeId son obligatorios.");
+    }
+
+    const locks = await cartSeatRepository.findValidByCartAndShowtimeWithDetails(cartId, showtimeId);
+
+    if (!locks || locks.length === 0) {
+      throw new AppError(404, "No hay sillas bloqueadas para este carrito y función.");
+    }
+
+    const showtime = locks[0].showtime;
+    const seats = locks.map((lock: any) => ({
+      id: lock.seat.id,
+      code: lock.seat.code,
+      rowLabel: lock.seat.rowLabel,
+      seatNumber: lock.seat.seatNumber,
+      seatType: lock.seat.seatType?.name ?? "Estándar",
+      price: Number(lock.price),
+    }));
+
+    const totalAmount = seats.reduce((sum, seat) => sum + seat.price, 0);
+
+    return {
+      cartId,
+      showtime: {
+        id: showtime.id,
+        movieId: showtime.movieId,
+        roomId: showtime.roomId,
+        startTime: showtime.startTime,
+        endTime: showtime.endTime,
+        basePrice: Number(showtime.basePrice),
+      },
+      seats,
+      totalSeats: seats.length,
+      totalAmount,
+      expiresAt: locks[0].expiresAt,
+    };
   }
 }
 

@@ -354,6 +354,49 @@ router.get("/", getMovies);
  *         schema:
  *           type: integer
  *           example: 1
+ *       - in: query
+ *         name: date
+ *         required: false
+ *         description: Fecha de las funciones en formato YYYY-MM-DD
+ *         schema:
+ *           type: string
+ *           format: date
+ *           example: "2026-08-26"
+ *       - in: query
+ *         name: complexId
+ *         required: false
+ *         description: Identificador del complejo de cine
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - in: query
+ *         name: roomId
+ *         required: false
+ *         description: Identificador de la sala
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - in: query
+ *         name: formatId
+ *         required: false
+ *         description: Identificador del formato de proyección
+ *         schema:
+ *           type: integer
+ *           example: 1
+ *       - in: query
+ *         name: language
+ *         required: false
+ *         description: Idioma de la función
+ *         schema:
+ *           type: string
+ *           example: "Español"
+ *       - in: query
+ *         name: isSubtitled
+ *         required: false
+ *         description: Indica si la función es subtitulada
+ *         schema:
+ *           type: boolean
+ *           example: false
  *     responses:
  *       200:
  *         description: Lista de funciones disponibles obtenida exitosamente

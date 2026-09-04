@@ -23,6 +23,7 @@ import snackRoutes from "./routes/snack.routes";
 import functionRoutes from "./routes/function.routes";
 import reservationRoutes from "./routes/seat-reservation.routes";
 
+
 const app = express();
 app.use(cors(corsOptions));
 
