@@ -18,6 +18,7 @@ export interface RoomAttributes {
   roomTypeId: number;
   name: string;
   capacity: number;
+  extraCharge: number;
   isActive: boolean;
 }
 
@@ -27,7 +28,7 @@ export interface RoomAttributes {
  * Se utiliza `Optional` para indicar que `id` no es requerido al momento
  * de la creación, ya que se genera automáticamente por la base de datos.
  */
-export interface RoomCreationAttributes extends Optional<RoomAttributes, "id"> {}
+export interface RoomCreationAttributes extends Optional<RoomAttributes, "id" | "extraCharge"> {}
 
 /**
  * Clase que representa el modelo `Room` en Sequelize.
@@ -49,6 +50,9 @@ class Room extends Model<RoomAttributes, RoomCreationAttributes> implements Room
 
   /** Capacidad de la sala (cantidad de asientos). */
   public capacity!: number;
+
+  /** Cargo adicional asociado a la sala (si aplica). */
+  public extraCharge!: number;
 
   /** Indica si la sala está activa. */
   public isActive!: boolean;
@@ -97,6 +101,12 @@ Room.init(
     capacity: {
       type: DataTypes.INTEGER,
       allowNull: false,
+    },
+    extraCharge: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+      defaultValue: 0,
+      field: "extra_charge",
     },
     isActive: {
       type: DataTypes.BOOLEAN,

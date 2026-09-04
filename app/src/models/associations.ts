@@ -9,29 +9,31 @@
  * las columnas de clave foránea y sus restricciones se creen automáticamente.
  */
 
-import Country from "./geo_locations/country.model";
-import Department from "./geo_locations/department.model";
-import City from "./geo_locations/city.model";
-import Role from "./role.model";
-import DocumentType from "./document-type.model";
-import User from "./user.model";
-import Movie from "./movie.model";
-import Showtime from "./showtime.model";
-import Genre from "./genre.model";
-import Format from "./format.model";
-import MovieCast from "./movie-cast.model";
 import CinemaComplex from "./complex/cinema.complex.model";
 import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
+import SnackCategory from "./snack/snack-category.model";
+import SnackProduct from "./snack/snack-product.model";
 import Membership from "./membership.model";
 import UserConsent from "./user-consent.model";
 import UserNotificationPreference from "./user-notification-preference.model";
 import EmailVerification from "./email-verification.model";
 import MembershipLevel from "./membership-level.model";
-import MovieLocation from "./movie-location.model";
 import SeatType from "./complex/seat-type.model";
 import Seat from "./complex/seat.model";
+import DocumentType from "./document-type.model";
+import Format from "./format.model";
+import Genre from "./genre.model";
+import City from "./geo_locations/city.model";
+import Country from "./geo_locations/country.model";
+import Department from "./geo_locations/department.model";
+import MovieCast from "./movie-cast.model";
+import MovieLocation from "./movie-location.model";
+import Movie from "./movie.model";
 import CartSeat from "./reservations/cart-seat.model";
+import Role from "./role.model";
+import Showtime from "./showtime.model";
+import User from "./user.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -53,8 +55,6 @@ Department.hasMany(City, { foreignKey: "departmentId", as: "cities" });
  */
 City.belongsTo(Department, { foreignKey: "departmentId", as: "department" });
 
-
-
 //relacion entre peliculas y funciones
 Movie.hasMany(Showtime, { foreignKey: "movieId", as: "showtimes" });
 Showtime.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
@@ -66,6 +66,11 @@ MovieCast.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
 // relacion entre funciones y formatos
 Showtime.belongsTo(Format, { foreignKey: "formatId", as: "format" });
 Format.hasMany(Showtime, { foreignKey: "formatId", as: "showtimes" });
+
+// relacion entre funciones y salas
+Showtime.belongsTo(Room, { foreignKey: "roomId", as: "room" });
+Room.hasMany(Showtime, { foreignKey: "roomId", as: "showtimes" });
+
 /**
  * Una ciudad puede tener muchos usuarios residentes en ella (relación uno a muchos).
  */
@@ -102,7 +107,15 @@ RoomType.hasMany(Room, { foreignKey: "roomTypeId", as: "rooms" });
 Room.belongsTo(RoomType, { foreignKey: "roomTypeId", as: "roomType" });
 
 /**
- * Un tipo de silla puede tener muchas sillas (relación uno a muchos).
+ * una categoria de confiteria puede tener muchos productos (relación uno a muchos)
+ */
+SnackCategory.hasMany(SnackProduct, { foreignKey: "categoryId", as: "products"});
+
+/**
+ * un producto de confiteria pertenece a una unica categoria (relación muchos a uno)
+ */
+SnackProduct.belongsTo(SnackCategory, { foreignKey: "categoryId", as: "category"});
+ /* Un tipo de silla puede tener muchas sillas (relación uno a muchos).
  */
 SeatType.hasMany(Seat, { foreignKey: "seatTypeId", as: "seats" });
 
@@ -134,7 +147,10 @@ DocumentType.hasMany(User, { foreignKey: "documentTypeId", as: "users" });
 /**
  * Un usuario pertenece a un único tipo de documento (relación muchos a uno).
  */
-User.belongsTo(DocumentType, { foreignKey: "documentTypeId", as: "documentType" });
+User.belongsTo(DocumentType, {
+  foreignKey: "documentTypeId",
+  as: "documentType",
+});
 
 /**
  * Un rol puede estar asociado a muchos usuarios (relación uno a muchos).
@@ -146,7 +162,6 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  * Todo usuario creado a través del registro público recibe por defecto el rol "Natural".
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
-
 
 // MEMBERSHIP ASSOCIATIONS
 /**
@@ -202,28 +217,30 @@ MembershipLevel.hasMany(Membership, { foreignKey: "levelId", as: "memberships" }
  * Una membresía pertenece a un único nivel de membresía (relación muchos a uno).
  */
 Membership.belongsTo(MembershipLevel, { foreignKey: "levelId", as: "level" });
-
-export {  Membership, UserConsent, UserNotificationPreference, EmailVerification, MembershipLevel };
-
 // associations.ts
 import UpcomingMovieNotification from "./upcoming-movie-notification.model";
 
-User.hasMany(UpcomingMovieNotification, { foreignKey: "userId", as: "notifications" });
+User.hasMany(UpcomingMovieNotification, {
+  foreignKey: "userId",
+  as: "notifications",
+});
 UpcomingMovieNotification.belongsTo(User, { foreignKey: "userId", as: "user" });
-Movie.hasMany(UpcomingMovieNotification, { foreignKey: "movieId", as: "upcomingNotifications" });
-UpcomingMovieNotification.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
-
-
+Movie.hasMany(UpcomingMovieNotification, {
+  foreignKey: "movieId",
+  as: "upcomingNotifications",
+});
+UpcomingMovieNotification.belongsTo(Movie, {
+  foreignKey: "movieId",
+  as: "movie",
+});
 
 /**
  * Un movie tiene muchos showtimes (relación uno a muchos).
  */
 
-
 /**
  * Un showtime pertenece a un único movie (relación muchos a uno).
  */
-
 
 /**
  * Una silla bloqueada en carrito pertenece a una única función (muchos a uno).
@@ -235,19 +252,18 @@ CartSeat.belongsTo(Showtime, { foreignKey: "showtimeId", as: "showtime" });
  */
 CartSeat.belongsTo(Seat, { foreignKey: "seatId", as: "seat" });
 
-
 Movie.belongsToMany(Genre, {
-    through: "movie_genres",
-    foreignKey: "movieId",
-    otherKey: "genreId",
-    as: "genres"
+  through: "movie_genres",
+  foreignKey: "movieId",
+  otherKey: "genreId",
+  as: "genres",
 });
 
-Genre.belongsToMany(Movie, { 
-    through: "movie_genres", 
-    foreignKey: "genreId", 
-    otherKey: "movieId", 
-    as: "movies" 
+Genre.belongsToMany(Movie, {
+  through: "movie_genres",
+  foreignKey: "genreId",
+  otherKey: "movieId",
+  as: "movies",
 });
 
 /**
@@ -257,7 +273,10 @@ Genre.belongsToMany(Movie, {
 Movie.hasMany(MovieLocation, { foreignKey: "movieId", as: "locations" });
 MovieLocation.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
 
-Country.hasMany(MovieLocation, { foreignKey: "countryId", as: "movieLocations" });
+Country.hasMany(MovieLocation, {
+  foreignKey: "countryId",
+  as: "movieLocations",
+});
 MovieLocation.belongsTo(Country, { foreignKey: "countryId", as: "country" });
 
 City.hasMany(MovieLocation, { foreignKey: "cityId", as: "movieLocations" });
@@ -271,5 +290,13 @@ export { Room };
 export { SeatType };
 export { Seat };
 export { MovieCast };
+export {SnackCategory, SnackProduct}
 export { UpcomingMovieNotification };
 export { MovieLocation };
+export {
+  Membership,
+  MembershipLevel,
+  UserConsent,
+  UserNotificationPreference,
+  EmailVerification,
+};
