@@ -1,3 +1,4 @@
+import { Op } from "sequelize";
 import SnackProduct from "../models/snack/snack-product.model";
 import SnackCategory from "../models/snack/snack-category.model";
 
@@ -14,6 +15,7 @@ class SnackProductRepository {
             // solo obtiene los productos que estan activos
             where: {
                 isActive: true,
+                stockQuantity: { [Op.gt]: 0 },
             },
             // incluye la categoria relacionada con cada producto
             include: [
@@ -36,6 +38,7 @@ class SnackProductRepository {
             where: {
                 categoryId,
                 isActive: true,
+                stockQuantity: { [Op.gt]: 0 },
             },
             // incluye la informacion de la categoria del producto
             include: [

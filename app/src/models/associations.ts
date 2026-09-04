@@ -25,6 +25,15 @@ import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
 import SnackCategory from "./snack/snack-category.model";
 import SnackProduct from "./snack/snack-product.model";
+import Membership from "./membership.model";
+import UserConsent from "./user-consent.model";
+import UserNotificationPreference from "./user-notification-preference.model";
+import EmailVerification from "./email-verification.model";
+import MembershipLevel from "./membership-level.model";
+import MovieLocation from "./movie-location.model";
+import SeatType from "./complex/seat-type.model";
+import Seat from "./complex/seat.model";
+import CartSeat from "./reservations/cart-seat.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -103,6 +112,24 @@ SnackCategory.hasMany(SnackProduct, { foreignKey: "categoryId", as: "products"})
  * un producto de confiteria pertenece a una unica categoria (relación muchos a uno)
  */
 SnackProduct.belongsTo(SnackCategory, { foreignKey: "categoryId", as: "category"});
+ /* Un tipo de silla puede tener muchas sillas (relación uno a muchos).
+ */
+SeatType.hasMany(Seat, { foreignKey: "seatTypeId", as: "seats" });
+
+/**
+ * Una silla pertenece a un único tipo de silla (relación muchos a uno).
+ */
+Seat.belongsTo(SeatType, { foreignKey: "seatTypeId", as: "seatType" });
+
+/**
+ * Una sala tiene muchas sillas (relación uno a muchos).
+ */
+Room.hasMany(Seat, { foreignKey: "roomId", as: "seats" });
+
+/**
+ * Una silla pertenece a una única sala (relación muchos a uno).
+ */
+Seat.belongsTo(Room, { foreignKey: "roomId", as: "room" });
 
 /**
  * Un usuario pertenece a una única ciudad (relación muchos a uno).
@@ -130,6 +157,74 @@ Role.hasMany(User, { foreignKey: "roleId", as: "users" });
  */
 User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 
+
+// MEMBERSHIP ASSOCIATIONS
+/**
+ * Un usuario puede tener una única membresía (relación uno a uno).
+ */
+User.hasOne(Membership, { foreignKey: "userId", as: "membership" });
+
+/**
+ * Una membresía pertenece a un único usuario (relación muchos a uno).
+ */
+Membership.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// CONSENT ASSOCIATIONS
+/**
+ * Un usuario puede tener muchos consentimientos (relación uno a muchos).
+ */
+User.hasMany(UserConsent, { foreignKey: "userId", as: "consents" });
+
+/**
+ * Un consentimiento pertenece a un único usuario (relación muchos a uno).
+ */
+UserConsent.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// PREFERENCE ASSOCIATIONS
+/**
+ * Un usuario puede tener una única preferencia de notificación (relación uno a uno).
+ */
+User.hasOne(UserNotificationPreference, { foreignKey: "userId", as: "notificationPreference" });
+
+/**
+ * Una preferencia de notificación pertenece a un único usuario (relación muchos a uno).
+ */
+UserNotificationPreference.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// EMAIL VERIFICATION ASSOCIATIONS
+/**
+ * Un usuario puede tener muchos códigos de verificación de correo electrónico (relación uno a muchos).
+ */
+User.hasMany(EmailVerification, { foreignKey: "userId", as: "emailVerifications" });
+
+/**
+ * Un código de verificación de correo electrónico pertenece a un único usuario (relación muchos a uno).
+ */
+EmailVerification.belongsTo(User, { foreignKey: "userId", as: "user" });
+
+// MEMBERSHIP LEVEL ASSOCIATIONS
+/**
+ * Un nivel de membresía puede tener muchas membresías (relación uno a muchos).
+ */
+MembershipLevel.hasMany(Membership, { foreignKey: "levelId", as: "memberships" });
+
+/**
+ * Una membresía pertenece a un único nivel de membresía (relación muchos a uno).
+ */
+Membership.belongsTo(MembershipLevel, { foreignKey: "levelId", as: "level" });
+
+export {  Membership, UserConsent, UserNotificationPreference, EmailVerification, MembershipLevel };
+
+// associations.ts
+import UpcomingMovieNotification from "./upcoming-movie-notification.model";
+
+User.hasMany(UpcomingMovieNotification, { foreignKey: "userId", as: "notifications" });
+UpcomingMovieNotification.belongsTo(User, { foreignKey: "userId", as: "user" });
+Movie.hasMany(UpcomingMovieNotification, { foreignKey: "movieId", as: "upcomingNotifications" });
+UpcomingMovieNotification.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+
+
 /**
  * Un movie tiene muchos showtimes (relación uno a muchos).
  */
@@ -138,6 +233,17 @@ User.belongsTo(Role, { foreignKey: "roleId", as: "role" });
 /**
  * Un showtime pertenece a un único movie (relación muchos a uno).
  */
+
+
+/**
+ * Una silla bloqueada en carrito pertenece a una única función (muchos a uno).
+ */
+CartSeat.belongsTo(Showtime, { foreignKey: "showtimeId", as: "showtime" });
+
+/**
+ * Una silla bloqueada en carrito pertenece a una única silla (muchos a uno).
+ */
+CartSeat.belongsTo(Seat, { foreignKey: "seatId", as: "seat" });
 
 
 Movie.belongsToMany(Genre, {
@@ -154,10 +260,27 @@ Genre.belongsToMany(Movie, {
     as: "movies" 
 });
 
+/**
+ * Una película puede estar disponible en varias ubicaciones (países o ciudades).
+ * El discriminador `scope` define si la disponibilidad es nacional o por ciudad.
+ */
+Movie.hasMany(MovieLocation, { foreignKey: "movieId", as: "locations" });
+MovieLocation.belongsTo(Movie, { foreignKey: "movieId", as: "movie" });
+
+Country.hasMany(MovieLocation, { foreignKey: "countryId", as: "movieLocations" });
+MovieLocation.belongsTo(Country, { foreignKey: "countryId", as: "country" });
+
+City.hasMany(MovieLocation, { foreignKey: "cityId", as: "movieLocations" });
+MovieLocation.belongsTo(City, { foreignKey: "cityId", as: "city" });
+
 
 export { Country, Department, City, Role, DocumentType, User, Genre, Movie, Showtime, Format };
 export { CinemaComplex };
 export { RoomType };
 export { Room };
+export { SeatType };
+export { Seat };
 export { MovieCast };
 export {SnackCategory, SnackProduct}
+export { UpcomingMovieNotification };
+export { MovieLocation };

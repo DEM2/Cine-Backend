@@ -1,228 +1,407 @@
 // app/src/models/user.model.ts
+
 /**
  * Modelo de Usuario
  *
- * Este archivo define el modelo `User` de Sequelize, que representa la tabla `users` en la base de datos.
+ * Representa la tabla "users" de la base de datos.
  *
- * Contiene:
- *  - Atributos del modelo (`UserAttributes`).
- *  - Atributos requeridos para la creación (`UserCreationAttributes`).
- *  - Definición del modelo con sus columnas y restricciones.
- *
- * Este modelo es utilizado por los servicios y controladores para realizar operaciones CRUD.
+ * En TypeScript se utilizan nombres camelCase.
+ * Sequelize los mapea a los nombres snake_case de PostgreSQL
+ * mediante la propiedad "field".
  */
 
 import { DataTypes, Model, Optional } from "sequelize";
-import bcrypt from 'bcrypt';
+import bcrypt from "bcrypt";
 import sequelize from "../config/database";
 
 /**
- * Atributos principales de la entidad `User`.
+ * Atributos principales del usuario.
  */
 export interface UserAttributes {
-  id: number;
-  email: string;
-  password: string;
-  documentTypeId: number;
-  documentNumber: string;
-  firstName: string;
-  lastName: string;
-  birthDate: string;
-  gender: string;
-  phone: string;
-  address: string;
-  cityId: number;
-  roleId: number;
-  failed_login_attempts: number;
-  lockout_until: Date | null;
-  isVerified: boolean;
+    id: number;
+    email: string;
+    password: string;
+
+    documentTypeId: number;
+    documentNumber: string;
+
+    firstName: string;
+    lastName: string;
+    birthDate: string;
+
+    gender?: string;
+    phone: string;
+    address: string;
+
+    cityId: number;
+    roleId: number;
+
+    isVerified: boolean;
+
+    failedLoginAttempts: number;
+    lockoutUntil?: Date | null;
+
+    status: string;
+
+    favoriteComplexId?: number | null;
 }
 
 /**
- * Atributos utilizados para la creación de un nuevo usuario.
+ * Atributos utilizados al crear un usuario.
  *
- * Se utiliza `Optional` para indicar que `id` no es requerido al momento
- * de la creación, ya que se genera automáticamente por la base de datos.
+ * Estos campos son opcionales porque tienen valores
+ * automáticos o predeterminados.
  */
-export interface UserCreationAttributes extends Optional<UserAttributes, "id"> {}
+export interface UserCreationAttributes
+    extends Optional<
+        UserAttributes,
+        "id" | "failedLoginAttempts" | "lockoutUntil"
+    > {}
 
 /**
- * Clase que representa el modelo `User` en Sequelize.
- *
- * Implementa los atributos definidos en `UserAttributes` y `UserCreationAttributes`.
+ * Modelo User de Sequelize.
  */
-class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  /** Identificador único del usuario (clave primaria). */
-  public id!: number;
+class User
+    extends Model<UserAttributes, UserCreationAttributes>
+    implements UserAttributes {
 
-  /** Dirección de correo electrónico única del usuario. */
-  public email!: string;
+    /**
+     * Identificador único.
+     */
+    public id!: number;
 
-  /** Contraseña encriptada del usuario. */
-  public password!: string;
+    /**
+     * Correo electrónico.
+     */
+    public email!: string;
 
-  /** Identificador del tipo de documento del usuario (clave foránea). */
-  public documentTypeId!: number;
+    /**
+     * Contraseña encriptada.
+     *
+     * En PostgreSQL se almacena en la columna:
+     * password_hash
+     */
+    public password!: string;
 
-  /** Número de documento de identidad, único por usuario. */
-  public documentNumber!: string;
+    /**
+     * Tipo de documento.
+     */
+    public documentTypeId!: number;
 
-  /** Primer nombre / nombres del usuario. */
-  public firstName!: string;
+    /**
+     * Número de documento.
+     */
+    public documentNumber!: string;
 
-  /** Apellidos del usuario. */
-  public lastName!: string;
+    /**
+     * Nombre.
+     */
+    public firstName!: string;
 
-  /** Fecha de nacimiento del usuario (formato YYYY-MM-DD). */
-  public birthDate!: string;
+    /**
+     * Apellido.
+     */
+    public lastName!: string;
 
-  /** Género del usuario. */
-  public gender!: string;
+    /**
+     * Fecha de nacimiento.
+     */
+    public birthDate!: string;
 
-  /** Número de teléfono de contacto del usuario. */
-  public phone!: string;
+    /**
+     * Género.
+     */
+    public gender?: string;
 
-  /** Dirección de residencia del usuario. */
-  public address!: string;
-  // Campos requeridos para la HU-007
-  public isVerified!: boolean;
-  public failed_login_attempts!: number;
-  public lockout_until!: Date | null;
+    /**
+     * Teléfono.
+     */
+    public phone!: string;
 
-  /** Identificador de la ciudad de residencia del usuario (clave foránea). */
-  public cityId!: number;
+    /**
+     * Dirección.
+     */
+    public address!: string;
 
-  /**
-   * Identificador del rol del usuario (clave foránea).
-   * Todo usuario creado a través del registro público recibe automáticamente
-   * el rol "Natural" (ver `UserService.create`).
-   */
-  public roleId!: number;
-  // Método para validar la contraseña
-  public async validPassword(password: string): Promise<boolean> {
-    return await bcrypt.compare(password, this.password);
-  }
+    /**
+     * Ciudad.
+     */
+    public cityId!: number;
+
+    /**
+     * Rol.
+     */
+    public roleId!: number;
+
+    /**
+     * Indica si el correo electrónico fue verificado.
+     */
+    public isVerified!: boolean;
+
+    /**
+     * Cantidad de intentos fallidos de inicio de sesión.
+     *
+     * En PostgreSQL:
+     * failed_login_attempts
+     */
+    public failedLoginAttempts!: number;
+
+    /**
+     * Fecha hasta la cual la cuenta permanece bloqueada.
+     *
+     * En PostgreSQL:
+     * lockout_until
+     */
+    public lockoutUntil?: Date | null;
+
+    /**
+     * Estado de la cuenta.
+     */
+    public status!: string;
+
+    /**
+     * Complejo favorito.
+     */
+    public favoriteComplexId?: number | null;
+
+    /**
+     * Validar contraseña.
+     *
+     * Compara la contraseña ingresada con la contraseña
+     * encriptada almacenada en la base de datos.
+     */
+    public async validPassword(
+        password: string
+    ): Promise<boolean> {
+        return await bcrypt.compare(
+            password,
+            this.password
+        );
+    }
 }
 
 /**
- * Inicialización del modelo `User` con la configuración de Sequelize.
- *
- *  - `id`: Entero autoincremental, clave primaria.
- *  - `email`: Correo electrónico único y obligatorio con máximo 100 caracteres.
- *  - `password`: Contraseña encriptada, obligatoria.
- *  - `documentTypeId`: Clave foránea obligatoria que referencia la tabla `document_types`.
- *  - `documentNumber`: Número de documento único y obligatorio.
- *  - `firstName` / `lastName`: Nombres y apellidos obligatorios.
- *  - `birthDate`: Fecha de nacimiento obligatoria.
- *  - `gender`: Género obligatorio.
- *  - `phone`: Teléfono de contacto obligatorio.
- *  - `address`: Dirección de residencia obligatoria.
- *  - `cityId`: Clave foránea obligatoria que referencia la tabla `cities`.
- *  - `roleId`: Clave foránea obligatoria que referencia la tabla `roles`.
+ * Inicialización del modelo.
  */
 User.init(
-  {
-    id: {
-      type: DataTypes.INTEGER,
-      autoIncrement: true,
-      primaryKey: true,
+    {
+        /**
+         * ID
+         */
+        id: {
+            type: DataTypes.INTEGER,
+            autoIncrement: true,
+            primaryKey: true,
+        },
+
+        /**
+         * Correo electrónico
+         */
+        email: {
+            type: DataTypes.STRING(100),
+            unique: true,
+            allowNull: false,
+        },
+
+        /**
+         * Contraseña
+         *
+         * En TypeScript: password
+         * En PostgreSQL: password_hash
+         */
+        password: {
+            type: DataTypes.STRING(255),
+            allowNull: false,
+            field: "password_hash",
+        },
+
+        /**
+         * Tipo de documento
+         */
+        documentTypeId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "document_type_id",
+            references: {
+                model: "document_types",
+                key: "id",
+            },
+        },
+
+        /**
+         * Número de documento
+         */
+        documentNumber: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            unique: true,
+            field: "document_number",
+        },
+
+        /**
+         * Nombre
+         */
+        firstName: {
+            type: DataTypes.STRING(100),
+            allowNull: false,
+            field: "first_name",
+        },
+
+        /**
+         * Apellido
+         */
+        lastName: {
+            type: DataTypes.STRING(100),
+            allowNull: false,
+            field: "last_name",
+        },
+
+        /**
+         * Fecha de nacimiento
+         */
+        birthDate: {
+            type: DataTypes.DATEONLY,
+            allowNull: false,
+            field: "birth_date",
+        },
+
+        /**
+         * Género
+         */
+        gender: {
+            type: DataTypes.STRING(20),
+            allowNull: true,
+        },
+
+        /**
+         * Teléfono
+         */
+        phone: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+        },
+
+        /**
+         * Dirección
+         */
+        address: {
+            type: DataTypes.STRING(150),
+            allowNull: false,
+        },
+
+        /**
+         * Ciudad
+         */
+        cityId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "city_id",
+            references: {
+                model: "cities",
+                key: "id",
+            },
+        },
+
+        /**
+         * Rol
+         */
+        roleId: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            field: "role_id",
+            references: {
+                model: "roles",
+                key: "id",
+            },
+        },
+
+        /**
+         * Correo verificado
+         *
+         * RN-031
+         */
+        isVerified: {
+            type: DataTypes.BOOLEAN,
+            allowNull: false,
+            defaultValue: false,
+        },
+
+        /**
+         * Cantidad de intentos fallidos.
+         *
+         * En TypeScript:
+         * failedLoginAttempts
+         *
+         * En PostgreSQL:
+         * failed_login_attempts
+         */
+        failedLoginAttempts: {
+            type: DataTypes.INTEGER,
+            allowNull: false,
+            defaultValue: 0,
+            field: "failed_login_attempts",
+        },
+
+        /**
+         * Fecha hasta la cual la cuenta está bloqueada.
+         *
+         * En TypeScript:
+         * lockoutUntil
+         *
+         * En PostgreSQL:
+         * lockout_until
+         */
+        lockoutUntil: {
+            type: DataTypes.DATE,
+            allowNull: true,
+            field: "lockout_until",
+        },
+
+        /**
+         * Estado de la cuenta.
+         */
+        status: {
+            type: DataTypes.STRING(20),
+            allowNull: false,
+            defaultValue: "INACTIVO",
+        },
+
+        /**
+         * Complejo favorito.
+         */
+        favoriteComplexId: {
+            type: DataTypes.INTEGER,
+            allowNull: true,
+            field: "favorite_complex_id",
+        },
     },
-    email: {
-      type: DataTypes.STRING(100),
-      unique: true,
-      allowNull: false,
-    },
-    password: {
-      type: DataTypes.STRING(255),
-      allowNull: false,
-    },
-    documentTypeId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "document_type_id",
-      references: {
-        model: "document_types",
-        key: "id",
-      },
-    },
-    documentNumber: {
-      type: DataTypes.STRING(20),
-      allowNull: false,
-      unique: true,
-      field: "document_number",
-    },
-    firstName: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      field: "first_name",
-    },
-    lastName: {
-      type: DataTypes.STRING(100),
-      allowNull: false,
-      field: "last_name",
-    },
-    birthDate: {
-      type: DataTypes.DATEONLY,
-      allowNull: false,
-      field: "birth_date",
-    },
-    gender: {
-      type: DataTypes.STRING(20),
-      allowNull: false,
-    },
-    phone: {
-      type: DataTypes.STRING(20),
-      allowNull: false,
-    },
-    address: {
-      type: DataTypes.STRING(150),
-      allowNull: false,
-    },
-  // Campos requeridos para la HU-007
-    isVerified: { 
-      type: DataTypes.BOOLEAN,
-      defaultValue: false 
-    }, // RN-031
-    failed_login_attempts: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0 
-    }, // RN-027
-     lockout_until: {
-      type: DataTypes.DATE,
-       allowNull: true 
-    },
-    cityId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "city_id",
-      references: {
-        model: "cities",
-        key: "id",
-      },
-    },
-    roleId: {
-      type: DataTypes.INTEGER,
-      allowNull: false,
-      field: "role_id",
-      references: {
-        model: "roles",
-        key: "id",
-      },
-    },
-  },
-  {
-    sequelize,
-    modelName: "User",      // Nombre del modelo en Sequelize
-    tableName: "users",     // Nombre de la tabla en la base de datos
-    timestamps: true,       // Incluye createdAt y updatedAt
-    hooks: {
-    // Hashear la contraseña automáticamente antes de guardarla
-    beforeCreate: async (user: User) => {
-      const salt = await bcrypt.genSalt(10);
-      user.password = await bcrypt.hash(user.password, salt);
+    {
+        sequelize,
+        modelName: "User",
+        tableName: "users",
+
+        /**
+         * Sequelize manejará automáticamente:
+         * createdAt
+         * updatedAt
+         */
+        timestamps: true,
+
+        /**
+         * Encriptar contraseña automáticamente
+         * antes de crear el usuario.
+         */
+        hooks: {
+            beforeCreate: async (user: User) => {
+                const salt = await bcrypt.genSalt(10);
+
+                user.password = await bcrypt.hash(
+                    user.password,
+                    salt
+                );
+            },
+        },
     }
-  }  
-  }
 );
 
 export default User;

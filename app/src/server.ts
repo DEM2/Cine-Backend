@@ -20,6 +20,8 @@ import authRoutes from './routes/auth.routes';
 import cinemaComplexRoutes from "./routes/cinema.complex.routes";
 import snackRoutes from "./routes/snack.routes";
 
+import functionRoutes from "./routes/function.routes";
+import reservationRoutes from "./routes/seat-reservation.routes";
 
 const app = express();
 app.use(cors(corsOptions));
@@ -29,6 +31,7 @@ app.use(express.json());
 
 // Rutas
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/departments", departmentRoutes);
@@ -36,6 +39,8 @@ app.use("/api/cities", cityRoutes);
 app.use("/api/snacks", snackRoutes)
 app.use('/auth', authRoutes);
 app.use("/api/complex", cinemaComplexRoutes);
+app.use("/api/functions", functionRoutes);
+app.use("/api/reservations", reservationRoutes);
 
 // Swagger
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

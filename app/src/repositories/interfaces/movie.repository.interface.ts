@@ -42,4 +42,10 @@ export interface IMovieRepository {
      * Obtiene las películas aplicando los filtros recibidos del cliente.
      */
     findFiltered(filters: MovieFilterDto): Promise<Movie[]>;
+
+    /**
+     * Obtiene las películas disponibles en una ciudad (scope CITY de esa
+     * ciudad o scope COUNTRY del país al que pertenece).
+     */
+    findAvailableInCity(cityId: number, countryId: number): Promise<Movie[]>;
 }
