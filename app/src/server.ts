@@ -21,6 +21,7 @@ import cinemaComplexRoutes from "./routes/cinema.complex.routes";
 import functionRoutes from "./routes/function.routes";
 import reservationRoutes from "./routes/seat-reservation.routes";
 
+
 const app = express();
 app.use(cors(corsOptions));
 
