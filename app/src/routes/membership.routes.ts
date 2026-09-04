@@ -7,7 +7,7 @@
 
 import { Router } from "express";
 import { getMembership, getBenefits } from "../controllers/membership.controller";
-// import { verifyToken } from "../middlewares/auth.middleware"; 
+import { verifyToken } from "../middlewares/auth.middleware"; 
 
 const router = Router();
 
@@ -43,7 +43,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get("/", /* verifyToken, */ getMembership);
+router.get("/",  verifyToken,  getMembership);
 
 /**
  * GET /benefits
@@ -77,6 +77,6 @@ router.get("/", /* verifyToken, */ getMembership);
  *       500:
  *         description: Error interno del servidor
  */
-router.get("/benefits", /* verifyToken, */ getBenefits);
+router.get("/benefits",  verifyToken,  getBenefits);
 
 export default router;

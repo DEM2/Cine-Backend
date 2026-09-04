@@ -7,7 +7,7 @@
 
 import { Router } from "express";
 import { getProfile, updateProfile } from "../controllers/profile.controller";
-// import { verifyToken } from "../middlewares/auth.middleware"; 
+import { verifyToken } from "../middlewares/auth.middleware"; 
 
 const router = Router();
 
@@ -54,7 +54,7 @@ const router = Router();
  *       500:
  *         description: Error interno del servidor
  */
-router.get("/", /* verifyToken, */ getProfile);
+router.get("/", verifyToken,  getProfile);
 
 /**
  * PUT /
@@ -121,6 +121,6 @@ router.get("/", /* verifyToken, */ getProfile);
  *       500:
  *         description: Error interno del servidor
  */
-router.put("/", /* verifyToken, */ updateProfile);
+router.put("/", verifyToken,  updateProfile);
 
 export default router;
