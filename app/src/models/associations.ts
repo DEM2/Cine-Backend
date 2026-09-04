@@ -23,6 +23,8 @@ import MovieCast from "./movie-cast.model";
 import CinemaComplex from "./complex/cinema.complex.model";
 import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
+import SnackCategory from "./snack/snack-category.model";
+import SnackProduct from "./snack/snack-product.model";
 
 /**
  * Un país tiene muchos departamentos (relación uno a muchos).
@@ -93,6 +95,16 @@ RoomType.hasMany(Room, { foreignKey: "roomTypeId", as: "rooms" });
 Room.belongsTo(RoomType, { foreignKey: "roomTypeId", as: "roomType" });
 
 /**
+ * una categoria de confiteria puede tener muchos productos (relación uno a muchos)
+ */
+SnackCategory.hasMany(SnackProduct, { foreignKey: "categoryId", as: "products"});
+
+/**
+ * un producto de confiteria pertenece a una unica categoria (relación muchos a uno)
+ */
+SnackProduct.belongsTo(SnackCategory, { foreignKey: "categoryId", as: "category"});
+
+/**
  * Un usuario pertenece a una única ciudad (relación muchos a uno).
  */
 User.belongsTo(City, { foreignKey: "cityId", as: "city" });
@@ -148,3 +160,4 @@ export { CinemaComplex };
 export { RoomType };
 export { Room };
 export { MovieCast };
+export {SnackCategory, SnackProduct}

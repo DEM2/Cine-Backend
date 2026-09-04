@@ -33,5 +33,5 @@ Membership.init({
   sequelize,
   modelName: 'Membership',
   tableName: 'memberships',
-  timestamps: true
+  timestamps: false, // false porque no necesitamos created_at ni updated_at.
 });
