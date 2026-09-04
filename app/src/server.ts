@@ -22,6 +22,8 @@ import snackRoutes from "./routes/snack.routes";
 
 import functionRoutes from "./routes/function.routes";
 import reservationRoutes from "./routes/seat-reservation.routes";
+import profileRoutes from "./routes/profile.routes";
+import membershipRoutes from "./routes/membership.routes";
 
 
 const app = express();
@@ -42,6 +44,9 @@ app.use('/auth', authRoutes);
 app.use("/api/complex", cinemaComplexRoutes);
 app.use("/api/functions", functionRoutes);
 app.use("/api/reservations", reservationRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/membership", membershipRoutes);
+
 
 // Swagger
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

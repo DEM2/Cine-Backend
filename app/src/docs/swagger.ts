@@ -22,6 +22,7 @@ import swaggerJSDoc from "swagger-jsdoc";
  * `definition`:
  *  - Define la versión de OpenAPI.
  *  - Contiene información básica de la API (título, versión, descripción).
+ *  - Define los esquemas de seguridad (Bearer Token).
  *
  * `apis`:
  *  - Indica la ruta donde se ubican los archivos con anotaciones JSDoc
@@ -35,10 +36,25 @@ const options = {
       version: "1.0.0",
       description: "Documentación generada automáticamente con Swagger para la API de ejemplo.",
     },
+    servers: [
+      {
+        url: "http://localhost:3000",
+        description: "Servidor de Desarrollo",
+      },
+    ],
+    components: {
+      securitySchemes: {
+        bearerAuth: {
+          type: "http",
+          scheme: "bearer",
+          bearerFormat: "JWT",
+          description: "Ingresa tu token JWT obtenido en el login. Ejemplo: eyJhbGciOi...",
+        },
+      },
+    },
   },
-  apis: ["./src/routes/*.ts"],// Escanea las rutas para extraer anotaciones Swagger
+  apis: ["./src/routes/*.ts"], // Escanea las rutas para extraer anotaciones Swagger
 };
-
 
 /**
  * Esquema de especificación Swagger/OpenAPI generado dinámicamente.
