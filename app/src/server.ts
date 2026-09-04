@@ -30,6 +30,7 @@ app.use(express.json());
 
 // Rutas
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/countries", countryRoutes);
 app.use("/api/departments", departmentRoutes);

@@ -270,10 +270,12 @@ class MovieRepository implements IMovieRepository {
     /**
      * Obtiene las películas disponibles en una ciudad específica.
      *
-     * El `countryId` se resuelve en el servicio a partir de la ciudad consultada.
+     * Incluye solo películas activas cuya distribución cubre la ciudad por
+     * país completo o por una ubicación puntual.
      */
     async findAvailableInCity(cityId: number, countryId: number): Promise<Movie[]> {
         return await Movie.findAll({
+            where: { status: "ACTIVE" },
             include: [
                 {
                     model: Genre,

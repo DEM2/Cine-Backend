@@ -19,9 +19,17 @@ const router = Router();
  * -----------------------------
  * Bloquea un conjunto de sillas de una función para un carrito.
  *
+ * Semántica del timer (RN-039): el tiempo de bloqueo (SEAT_LOCK_TTL_MINUTES,
+ * default 10 min) inicia con el PRIMER bloqueo del carrito para esa función y
+ * NO se extiende con bloqueos posteriores; los nuevos locks heredan la misma
+ * fecha de expiración. Al expirar, todas las sillas del carrito se liberan
+ * automáticamente (RN-040).
+ *
  * Comportamiento idempotente por carrito: si alguna silla ya está bloqueada por
  * el MISMO `cartId`, se ignora (no falla). Solo se devuelve 409 si una silla
- * está bloqueada por OTRO carrito.
+ * está bloqueada por OTRO carrito con un lock vigente.
+ *
+ * Límite de entradas: no se puede superar MAX_TICKETS_PER_SHOWTIME (default 5).
  *
  * Request Body:
  *  - cartId: Identificador del carrito.
@@ -30,9 +38,9 @@ const router = Router();
  *
  * Response:
  *  - 201 Created: Sillas bloqueadas correctamente (estado completo del carrito + total).
- *  - 400 Bad Request: Datos inválidos.
+ *  - 400 Bad Request: Datos inválidos, silla no válida o máximo de entradas excedido.
  *  - 404 Not Found: La función no existe.
- *  - 409 Conflict: Una o más sillas ya están bloqueadas por otro carrito.
+ *  - 409 Conflict: Una o más sillas están bloqueadas por otro carrito.
  *
  * @swagger
  * /api/reservations/lock-seats:
@@ -74,13 +82,19 @@ const router = Router();
  *                   seatId: 1
  *                   price: "23000.00"
  *                   lockedAt: "2026-08-20T15:30:00.000Z"
+ *                   expiresAt: "2026-08-20T15:40:00.000Z"
  *               total: 69000
  *       400:
- *         description: Datos inválidos o silla no válida para la función
+ *         description: Datos inválidos, silla no válida o máximo de entradas excedido
  *         content:
  *           application/json:
- *             example:
- *               message: "La silla A-2 no pertenece a la sala de la función."
+ *             examples:
+ *               invalidSeat:
+ *                 value:
+ *                   message: "La silla A-2 no pertenece a la sala de la función."
+ *               maxTickets:
+ *                 value:
+ *                   message: "No puedes seleccionar más de 5 entradas para esta función."
  *       404:
  *         description: La función no existe
  *         content:
@@ -88,7 +102,7 @@ const router = Router();
  *             example:
  *               message: "Función no encontrada."
  *       409:
- *         description: Una o más sillas ya están bloqueadas
+ *         description: Una o más sillas ya están bloqueadas por otro carrito
  *         content:
  *           application/json:
  *             example:
