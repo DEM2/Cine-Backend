@@ -3,6 +3,8 @@
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import repository from "../repositories/movie.repository";
+import roomRepository from "../repositories/room.repository";
+import { MovieFilterCriteria, ShowtimeSearchCriteria } from "../repositories/types/movie-query.types";
 import notificationRepository from "../repositories/notification.repository";
 import UpcomingMovieNotification from "../models/upcoming-movie-notification.model";
 import AppError from "../error/appError";
@@ -15,6 +17,7 @@ import City from "../models/geo_locations/city.model";
 import Department from "../models/geo_locations/department.model";
 import Country from "../models/geo_locations/country.model";
 
+import { FunctionFilterDto } from "../dto/funtion/funtion-filter.dto";
 
 /**
  * Servicio de Movie
@@ -130,7 +133,23 @@ class MovieService implements IMovieService {
     }
 
     async getFiltered(filters: MovieFilterDto): Promise<Movie[]> {
-        return await repository.findFiltered(filters);
+        const criteria: MovieFilterCriteria = {
+            movie: {
+                title: filters.title,
+                genre: filters.genre,
+                rating: filters.rating,
+                language: filters.language,
+                premiere: filters.premiere,
+            },
+            showtime: {
+                date: filters.date,
+                formatId: filters.formatId,
+                complex: filters.complex,
+                isSoldOut: filters.available !== undefined ? !filters.available : undefined,
+            },
+        };
+
+        return await repository.findFiltered(criteria);
     }
 
     async findById(id: number): Promise<Movie> {
@@ -143,13 +162,81 @@ class MovieService implements IMovieService {
         return movie;
     }
 
-    async findFunctions(movieId: number): Promise<Showtime[]> {
+    async findFunctions(
+        movieId: number,
+        filters: FunctionFilterDto = {}
+    ): Promise<Showtime[]> {
         await this.findById(movieId);
-        const showtimes = await repository.findFunctionsByMovieId(movieId);
-        if (!showtimes) {
-            throw new AppError(404, "No se encontraron funciones para la película.");
+
+        if (filters.date) {
+            const selectedDate = new Date(`${filters.date}T00:00:00-05:00`);
+            if (Number.isNaN(selectedDate.getTime())) {
+                throw new AppError(400, "La fecha enviada no es válida.");
+            }
+
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+
+            const lastAvailableDate = new Date(today);
+            lastAvailableDate.setDate(lastAvailableDate.getDate() + 7);
+
+            if (selectedDate < today || selectedDate > lastAvailableDate) {
+                throw new AppError(400, "Solo puedes consultar funciones desde hoy hasta los próximos 7 días.");
+            }
         }
-        return showtimes;
+
+        const criteria = await this.buildShowtimeSearchCriteria(movieId, filters);
+        return await repository.findFunctionsByCriteria(criteria);
+    }
+
+    private async buildShowtimeSearchCriteria(
+        movieId: number,
+        filters: FunctionFilterDto
+    ): Promise<ShowtimeSearchCriteria> {
+        const now = new Date();
+
+        const limitDate = new Date(now);
+        limitDate.setDate(limitDate.getDate() + 8);
+        limitDate.setHours(0, 0, 0, 0);
+
+        const criteria: ShowtimeSearchCriteria = {
+            movieId,
+            isActive: true,
+            onlyWithAvailableSeats: true,
+            startTimeGt: now,
+            startTimeLt: limitDate,
+        };
+
+        if (filters.date) {
+            const startOfDay = new Date(`${filters.date}T00:00:00-05:00`);
+            const nextDay = new Date(`${filters.date}T00:00:00-05:00`);
+            nextDay.setDate(nextDay.getDate() + 1);
+
+            criteria.startTimeGte = startOfDay;
+            criteria.startTimeLt = nextDay;
+        }
+
+        if (filters.roomId !== undefined) {
+            criteria.roomId = filters.roomId;
+        }
+
+        if (filters.formatId !== undefined) {
+            criteria.formatId = filters.formatId;
+        }
+
+        if (filters.language !== undefined) {
+            criteria.language = filters.language;
+        }
+
+        if (filters.isSubtitled !== undefined) {
+            criteria.isSubtitled = filters.isSubtitled;
+        }
+
+        if (filters.complexId !== undefined) {
+            criteria.roomIds = await roomRepository.findIdsByComplexId(filters.complexId);
+        }
+
+        return criteria;
     }
 
     async findRecommendedMovies(id: number): Promise<Movie[]> {
@@ -180,7 +267,7 @@ class MovieService implements IMovieService {
      * Se ordenan por fecha de estreno ascendente (lo aplica el repositorio).
      */
     async getUpcoming(): Promise<Movie[]> {
-        return await repository.findUpcoming();
+        return await repository.findByStatus("UPCOMING");
     }
 
     /**

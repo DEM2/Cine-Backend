@@ -1,7 +1,8 @@
 // app/src/repositories/interfaces/movie.repository.interface.ts
 
 import Movie, { MovieCreationAttributes } from "../../models/movie.model";
-import { MovieFilterDto } from "../../dto/movie/movie-filter.dto";
+import Showtime from "../../models/showtime.model";
+import { MovieFilterCriteria, ShowtimeSearchCriteria } from "../types/movie-query.types";
 
 /**
  * Contrato del Repositorio de Películas
@@ -24,6 +25,11 @@ export interface IMovieRepository {
     findAll(): Promise<Movie[]>;
 
     /**
+     * Busca una película por su id.
+     */
+    findById(id: number): Promise<Movie | null>;
+
+    /**
      * Busca una película por su título.
      */
     findByTitle(title: string): Promise<Movie | null>;
@@ -39,9 +45,24 @@ export interface IMovieRepository {
     findWeekly(startDate: string, endDate: string): Promise<Movie[]>;
 
     /**
-     * Obtiene las películas aplicando los filtros recibidos del cliente.
+     * Obtiene las películas aplicando criterios de consulta ya resueltos.
      */
-    findFiltered(filters: MovieFilterDto): Promise<Movie[]>;
+    findFiltered(criteria: MovieFilterCriteria): Promise<Movie[]>;
+
+    /**
+     * Obtiene funciones de una película según criterios de búsqueda.
+     */
+    findFunctionsByCriteria(criteria: ShowtimeSearchCriteria): Promise<Showtime[]>;
+
+    /**
+     * Obtiene películas recomendadas por géneros compartidos.
+     */
+    findRecommendedMovies(id: number, genreIds: number[]): Promise<Movie[]>;
+
+    /**
+     * Obtiene películas filtradas por estado.
+     */
+    findByStatus(status: string): Promise<Movie[]>;
 
     /**
      * Obtiene las películas disponibles en una ciudad (scope CITY de esa

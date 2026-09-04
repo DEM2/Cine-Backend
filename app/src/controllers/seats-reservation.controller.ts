@@ -53,3 +53,28 @@ export const releaseSeats = async (req: Request, res: Response): Promise<Respons
     });
   }
 };
+
+/**
+ * GET /reservations/summary
+ * -------------------------
+ * Obtiene el resumen de las sillas bloqueadas por un carrito para una función.
+ *
+ * Query Params:
+ *  - cartId: Identificador del carrito.
+ *  - showtimeId: Identificador de la función.
+ */
+export const getReservationSummary = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    const cartId = Number(req.query.cartId);
+    const showtimeId = Number(req.query.showtimeId);
+    const result = await reservationService.getReservationSummary(cartId, showtimeId);
+    return res.status(200).json(result);
+  } catch (error: any) {
+    if (error instanceof AppError) {
+      return res.status(error.status).json({ message: error.message });
+    }
+    return res.status(500).json({
+      error: error.message,
+    });
+  }
+};

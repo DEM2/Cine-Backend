@@ -3,6 +3,7 @@ import { Request, Response } from "express";
 import movieService from "../services/movie.service";
 
 import { CreateMovieDto } from "../dto/movie/create-movie.dto";
+import { FunctionFilterDto } from "../dto/funtion/funtion-filter.dto";
 import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
 import AppError from "../error/appError";
 
@@ -372,10 +373,38 @@ export const getMovieById = async (_req: Request, res: Response): Promise<Respon
  * Obtiene las funciones futuras de una película.
  * Stub temporal: la lógica se implementa después.
  */
-export const getMovieFunctions = async (_req: Request, res: Response): Promise<Response> => {
+export const getMovieFunctions = async (req: Request, res: Response): Promise<Response> => {
     try {
-        const movieId = Number(_req.params.id)
-        const functions = await movieService.findFunctions(movieId);
+        const movieId = Number(req.params.id);
+        const queryValue = (value: unknown): string | undefined =>
+            typeof value === "string" ? value : undefined;
+        const numberQueryValue = (value: unknown): number | undefined => {
+            const parsed = Number(queryValue(value));
+            return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined;
+        };
+
+        const isSubtitled = queryValue(req.query.isSubtitled);
+        const filters: FunctionFilterDto = {
+            date: queryValue(req.query.date),
+            complexId: numberQueryValue(req.query.complexId),
+            roomId: numberQueryValue(req.query.roomId),
+            formatId: numberQueryValue(req.query.formatId),
+            language: queryValue(req.query.language),
+            isSubtitled:
+                isSubtitled === "true"
+                    ? true
+                    : isSubtitled === "false"
+                      ? false
+                      : undefined,
+        };
+
+        const functions = await movieService.findFunctions(movieId, filters);
+        if (functions.length === 0) {
+            return res.status(200).json({
+                functions: []
+            });
+        }
+        
         return res.status(200).json(functions);
     } catch (error: any) {
         if (error instanceof AppError) {
@@ -405,6 +434,7 @@ export const getRecommendedMovies = async (_req: Request, res: Response): Promis
         });
     }
 };
+
 
 export const getUpcomingMovies = async (_req: Request, res: Response): Promise<Response> => {
     try {

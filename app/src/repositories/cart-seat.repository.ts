@@ -79,6 +79,39 @@ class CartSeatRepository implements ICartSeatRepository {
       transaction: options?.transaction,
     });
   }
+
+  async findValidByCartAndShowtimeWithDetails(
+    cartId: number,
+    showtimeId: number
+  ): Promise<any[]> {
+    return await CartSeat.findAll({
+      where: {
+        cartId,
+        showtimeId,
+        ...validLockWhere(),
+      },
+      include: [
+        {
+          model: (await import("../models/showtime.model")).default,
+          as: "showtime",
+          attributes: ["id", "movieId", "roomId", "startTime", "endTime", "basePrice"],
+        },
+        {
+          model: (await import("../models/complex/seat.model")).default,
+          as: "seat",
+          attributes: ["id", "code", "rowLabel", "seatNumber"],
+          include: [
+            {
+              model: (await import("../models/complex/seat-type.model")).default,
+              as: "seatType",
+              attributes: ["id", "name"],
+            },
+          ],
+        },
+      ],
+      attributes: ["id", "cartId", "showtimeId", "seatId", "price", "lockedAt", "expiresAt"],
+    });
+  }
 }
 
 export default new CartSeatRepository();

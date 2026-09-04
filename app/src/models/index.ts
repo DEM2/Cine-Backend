@@ -1,7 +1,7 @@
 import  User  from './user.model';
 import { RefreshToken } from './refreshToken.model';
 import { Audit } from './audit.model';
-import { Membership } from './membership.model';
+import Membership from './membership.model';
 import { Benefit } from './benefit.model';
 
 // Un usuario puede tener varios Refresh Tokens (si inicia sesión en el cel y en la PC)
