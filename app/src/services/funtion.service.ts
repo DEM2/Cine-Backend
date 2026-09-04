@@ -38,7 +38,7 @@ class FunctionService implements IFunctionService {
             isSubtitled: functionData.isSubtitled,
             startTime: functionData.startTime,
             endTime: functionData.endTime,
-            basePrice: functionData.basePrice,
+            basePrice: Number(functionData.basePrice),
             availableSeats: functionData.availableSeats,
             isActive: functionData.isActive,
         };
