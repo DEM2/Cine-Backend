@@ -1,17 +1,14 @@
 // app/src/repositories/movie.repository.ts
 
-import { MovieFilterDto } from "../dto/movie/movie-filter.dto";
-import { cast, Op } from "sequelize";
+import { Op } from "sequelize";
 import Movie, { MovieCreationAttributes } from "../models/movie.model";
-import { IMovieRepository } from "./interfaces/movie.repository.interface";
 import Showtime from "../models/showtime.model";
+import { IMovieRepository } from "./interfaces/movie.repository.interface";
 import Format from "../models/format.model";
-
-
 import Genre from "../models/genre.model";
 import MovieCast from "../models/movie-cast.model";
 import MovieLocation from "../models/movie-location.model";
-import { idText } from "typescript";
+import { MovieFilterCriteria, ShowtimeSearchCriteria } from "./types/movie-query.types";
 
 /**
  * Repositorio de Películas
@@ -23,21 +20,21 @@ import { idText } from "typescript";
  */
 
 class MovieRepository implements IMovieRepository {
-    
+
     /**
      * Obtiene las películas con funciones activas en una fecha específica.
      */
     async findToday(date: string): Promise<Movie[]> {
         const startOfDay = new Date(`${date}T00:00:00Z`);
         const endOfDay = new Date(`${date}T23:59:59Z`);
-        
+
         return await Movie.findAll({
             subQuery: false,
             include: [
                 {
                     model: Showtime,
                     as: "showtimes",
-                    where: { 
+                    where: {
                         isActive: true,
                         startTime: {
                             [Op.between]: [startOfDay, endOfDay]
@@ -55,14 +52,14 @@ class MovieRepository implements IMovieRepository {
     async findWeekly(startDate: string, endDate: string): Promise<Movie[]> {
         const startDateTime = new Date(`${startDate}T00:00:00Z`);
         const endDateTime = new Date(`${endDate}T23:59:59Z`);
-        
+
         return await Movie.findAll({
             subQuery: false,
             include: [
                 {
                     model: Showtime,
                     as: "showtimes",
-                    where: { 
+                    where: {
                         isActive: true,
                         startTime: {
                             [Op.between]: [startDateTime, endDateTime]
@@ -75,43 +72,42 @@ class MovieRepository implements IMovieRepository {
     }
 
     /**
-     * Obtiene las películas aplicando filtros combinados.
+     * Obtiene las películas aplicando criterios de consulta.
      */
-    async findFiltered(filters: MovieFilterDto): Promise<Movie[]> {
-        const movieWhere: any = {};
-        const showtimeWhere: any = { isActive: true };
+    async findFiltered(criteria: MovieFilterCriteria): Promise<Movie[]> {
+        const movieWhere: Record<string, unknown> = {};
+        const showtimeWhere: Record<string, unknown> = { isActive: true };
+        const { movie, showtime } = criteria;
 
-        // Filtros de película
-        if (filters.title) {
-            movieWhere.title = { [Op.iLike]: `%${filters.title}%` };
+        if (movie.title) {
+            movieWhere.title = { [Op.iLike]: `%${movie.title}%` };
         }
-        if (filters.genre) {
-            movieWhere.genre = { [Op.iLike]: `%${filters.genre}%` };
+        if (movie.genre) {
+            movieWhere.genre = { [Op.iLike]: `%${movie.genre}%` };
         }
-        if (filters.rating) {
-            movieWhere.rating = filters.rating;
+        if (movie.rating) {
+            movieWhere.rating = movie.rating;
         }
-        if (filters.language) {
-            movieWhere.language = { [Op.iLike]: `%${filters.language}%` };
+        if (movie.language) {
+            movieWhere.language = { [Op.iLike]: `%${movie.language}%` };
         }
-        if (filters.premiere !== undefined) {
-            movieWhere.premiere = filters.premiere;
+        if (movie.premiere !== undefined) {
+            movieWhere.premiere = movie.premiere;
         }
 
-        // Filtros de función
-        if (filters.date) {
-            const startOfDay = new Date(`${filters.date}T00:00:00Z`);
-            const endOfDay = new Date(`${filters.date}T23:59:59Z`);
+        if (showtime.date) {
+            const startOfDay = new Date(`${showtime.date}T00:00:00Z`);
+            const endOfDay = new Date(`${showtime.date}T23:59:59Z`);
             showtimeWhere.startTime = { [Op.between]: [startOfDay, endOfDay] };
         }
-        if (filters.formatId) {
-            showtimeWhere.formatId = filters.formatId;
+        if (showtime.formatId) {
+            showtimeWhere.formatId = showtime.formatId;
         }
-        if (filters.complex) {
-            showtimeWhere.complex = { [Op.iLike]: `%${filters.complex}%` };
+        if (showtime.complex) {
+            showtimeWhere.complex = { [Op.iLike]: `%${showtime.complex}%` };
         }
-        if (filters.available !== undefined) {
-            showtimeWhere.isSoldOut = !filters.available;
+        if (showtime.isSoldOut !== undefined) {
+            showtimeWhere.isSoldOut = showtime.isSoldOut;
         }
 
         return await Movie.findAll({
@@ -149,16 +145,6 @@ class MovieRepository implements IMovieRepository {
      */
     async findAll(): Promise<Movie[]> {
         return await Movie.findAll({
-            // subQuery: false,
-            // include: [
-            //     {
-            //         model: Showtime,
-            //         as: "showtimes",
-            //         where: { isActive: true },
-            //         required: false,
-            //     }
-            // ]
-            // tiempo de las movies agregar 
             include: [{
                 model: Genre,
                 as: 'genres',
@@ -178,7 +164,7 @@ class MovieRepository implements IMovieRepository {
             include: [{
                 model: Genre,
                 as: 'genres',
-                attributes: ['name','id'],
+                attributes: ['name', 'id'],
                 through: { attributes: [] },
             },
             {
@@ -193,21 +179,61 @@ class MovieRepository implements IMovieRepository {
      * Busca una película por su título.
      */
     async findByTitle(title: string): Promise<Movie | null> {
-        return await Movie.findOne({ 
+        return await Movie.findOne({
             where: { title },
             include: [{
                 model: Genre,
-                    as: 'genres',
-                    attributes: ['name'],
-                    through: { attributes: [] },
-                }
-            ]
+                as: 'genres',
+                attributes: ['name'],
+                through: { attributes: [] },
+            }]
         });
     }
 
-    async findFunctionsByMovieId(movieId: number): Promise<Showtime[]> {
-        return await Showtime.findAll({ 
-            where: { movieId }
+    async findFunctionsByCriteria(criteria: ShowtimeSearchCriteria): Promise<Showtime[]> {
+        const startTime: Record<symbol, Date> = {};
+
+        if (criteria.startTimeGt) {
+            startTime[Op.gt] = criteria.startTimeGt;
+        }
+        if (criteria.startTimeGte) {
+            startTime[Op.gte] = criteria.startTimeGte;
+        }
+        if (criteria.startTimeLt) {
+            startTime[Op.lt] = criteria.startTimeLt;
+        }
+
+        const where: Record<string, unknown> = {
+            movieId: criteria.movieId,
+            isActive: criteria.isActive,
+            startTime,
+        };
+
+        if (criteria.onlyWithAvailableSeats) {
+            where.availableSeats = { [Op.gt]: 0 };
+        }
+
+        if (criteria.roomIds !== undefined) {
+            where.roomId = { [Op.in]: criteria.roomIds };
+        } else if (criteria.roomId !== undefined) {
+            where.roomId = criteria.roomId;
+        }
+
+        if (criteria.formatId !== undefined) {
+            where.formatId = criteria.formatId;
+        }
+
+        if (criteria.language !== undefined) {
+            where.language = criteria.language;
+        }
+
+        if (criteria.isSubtitled !== undefined) {
+            where.isSubtitled = criteria.isSubtitled;
+        }
+
+        return await Showtime.findAll({
+            where,
+            order: [["startTime", "ASC"]],
         });
     }
 
@@ -230,61 +256,47 @@ class MovieRepository implements IMovieRepository {
         });
     }
 
-async findUpcoming(): Promise<Movie[]> {
-    return await Movie.findAll({
-        where: { status: "UPCOMING" },
-        order: [["release_date", "ASC"]],
-        include: [
-            { model: Genre, as: 'genres', attributes: ['name', 'id'], through: { attributes: [] } },
-            { model: MovieCast, as: 'cast', attributes: ['id', 'actorName', 'roleName'] },
-        ]
-    });
-}
+    async findByStatus(status: string): Promise<Movie[]> {
+        return await Movie.findAll({
+            where: { status },
+            order: [["release_date", "ASC"]],
+            include: [
+                { model: Genre, as: 'genres', attributes: ['name', 'id'], through: { attributes: [] } },
+                { model: MovieCast, as: 'cast', attributes: ['id', 'actorName', 'roleName'] },
+            ]
+        });
+    }
 
-/**
- * Obtiene las películas disponibles en una ciudad específica.
- *
- * Una película está disponible en la ciudad cuando:
- *  - Tiene una ubicación con scope 'CITY' apuntando a esa ciudad, o
- *  - Tiene una ubicación con scope 'COUNTRY' para el país de esa ciudad
- *    (disponibilidad nacional).
- *
- * El `countryId` se resuelve en el servicio a partir de la ciudad consultada.
- *
- * Detalle Sequelize: el `where` dentro del include genera un INNER JOIN
- * con condición sobre `movie_locations`, no sobre la tabla principal.
- * `required: true` garantiza que SOLO regresen películas que tengan al
- * menos una fila de ubicación que cumpla la condición.
- */
-async findAvailableInCity(cityId: number, countryId: number): Promise<Movie[]> {
-    return await Movie.findAll({
-        where: { status: "ACTIVE" },
-        include: [
-            {
-                // Géneros de cada película (N:M a través de movie_genres).
-                model: Genre,
-                as: 'genres',
-                attributes: ['name', 'id'],
-                through: { attributes: [] }, // oculta las columnas de la tabla intermedia
-            },
-            {
-                // Filtro por distribución geográfica.
-                model: MovieLocation,
-                as: 'locations',
-                required: true, // INNER JOIN: sin ubicación compatible → fuera
-                where: {
-                    [Op.or]: [
-                        // Caso 1: distribución nacional que cubre el país de la ciudad.
-                        { scope: "COUNTRY", countryId },
-                        // Caso 2: distribución puntual para exactamente esta ciudad.
-                        { scope: "CITY", cityId },
-                    ]
+    /**
+     * Obtiene las películas disponibles en una ciudad específica.
+     *
+     * Incluye solo películas activas cuya distribución cubre la ciudad por
+     * país completo o por una ubicación puntual.
+     */
+    async findAvailableInCity(cityId: number, countryId: number): Promise<Movie[]> {
+        return await Movie.findAll({
+            where: { status: "ACTIVE" },
+            include: [
+                {
+                    model: Genre,
+                    as: 'genres',
+                    attributes: ['name', 'id'],
+                    through: { attributes: [] },
+                },
+                {
+                    model: MovieLocation,
+                    as: 'locations',
+                    required: true,
+                    where: {
+                        [Op.or]: [
+                            { scope: "COUNTRY", countryId },
+                            { scope: "CITY", cityId },
+                        ]
+                    }
                 }
-            }
-        ]
-    });
-}
-
+            ]
+        });
+    }
 }
 
 export default new MovieRepository();

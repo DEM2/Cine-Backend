@@ -12,6 +12,7 @@ import seatRepository from "../repositories/seat.repository";
 import { LockSeatsDto } from "../dto/reservations/lock-seats.dto";
 import { ReleaseSeatsDto } from "../dto/reservations/release-seats.dto";
 import { SummaryResponseDto } from "../dto/reservations/summary-response.dto";
+import functionService from "./funtion.service";
 import {
   IReservationService,
   LockSeatsResult,
@@ -30,8 +31,9 @@ type SeatWithType = Seat & { seatType: SeatType };
 class ReservationService implements IReservationService {
 
   async getShowtimeSeats(showtimeId: number): Promise<ShowtimeSeatDto[]> {
+    const functionPrice = await functionService.getPrice(showtimeId);
     const showtime = await Showtime.findByPk(showtimeId);
-    if (!showtime || !showtime.isActive) {
+    if (!showtime) {
       throw new AppError(404, "Función no encontrada.");
     }
 
@@ -57,7 +59,7 @@ class ReservationService implements IReservationService {
       status: lockedBySeat.has(seat.id) ? "locked" : "available",
       lockedByCartId: lockedBySeat.get(seat.id) ?? null,
       price:
-        Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0),
+        functionPrice.finalPrice + Number(seat.seatType?.extraCharge ?? 0),
     }));
   }
 
@@ -71,8 +73,9 @@ class ReservationService implements IReservationService {
       throw new AppError(400, "Debes indicar al menos una silla.");
     }
 
+    const functionPrice = await functionService.getPrice(dto.showtimeId);
     const showtime = await Showtime.findByPk(dto.showtimeId);
-    if (!showtime || !showtime.isActive) {
+    if (!showtime) {
       throw new AppError(404, "Función no encontrada.");
     }
 
@@ -98,11 +101,6 @@ class ReservationService implements IReservationService {
         );
       }
     }
-
-    const priceFor = (seatId: number): number => {
-      const seat = seatMap.get(seatId)!;
-      return Number(showtime.basePrice) + Number(seat.seatType?.extraCharge ?? 0);
-    };
 
     // Toda la verificación de vigencia/conflictos y la inserción se hacen
     // dentro de UNA transacción para evitar sobreventas por concurrencia.
@@ -155,7 +153,9 @@ class ReservationService implements IReservationService {
         cartId: dto.cartId,
         showtimeId: dto.showtimeId,
         seatId,
-        price: priceFor(seatId),
+        price:
+          functionPrice.finalPrice +
+          Number(seatMap.get(seatId)!.seatType?.extraCharge ?? 0),
         expiresAt: cartExpiresAt,
       }));
 
