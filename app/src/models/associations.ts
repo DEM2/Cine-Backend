@@ -12,6 +12,8 @@
 import CinemaComplex from "./complex/cinema.complex.model";
 import RoomType from "./complex/room-type.model";
 import Room from "./complex/room.model";
+import SnackCategory from "./snack/snack-category.model";
+import SnackProduct from "./snack/snack-product.model";
 import Membership from "./membership.model";
 import UserConsent from "./user-consent.model";
 import UserNotificationPreference from "./user-notification-preference.model";
@@ -105,7 +107,15 @@ RoomType.hasMany(Room, { foreignKey: "roomTypeId", as: "rooms" });
 Room.belongsTo(RoomType, { foreignKey: "roomTypeId", as: "roomType" });
 
 /**
- * Un tipo de silla puede tener muchas sillas (relación uno a muchos).
+ * una categoria de confiteria puede tener muchos productos (relación uno a muchos)
+ */
+SnackCategory.hasMany(SnackProduct, { foreignKey: "categoryId", as: "products"});
+
+/**
+ * un producto de confiteria pertenece a una unica categoria (relación muchos a uno)
+ */
+SnackProduct.belongsTo(SnackCategory, { foreignKey: "categoryId", as: "category"});
+ /* Un tipo de silla puede tener muchas sillas (relación uno a muchos).
  */
 SeatType.hasMany(Seat, { foreignKey: "seatTypeId", as: "seats" });
 
@@ -272,27 +282,20 @@ MovieLocation.belongsTo(Country, { foreignKey: "countryId", as: "country" });
 City.hasMany(MovieLocation, { foreignKey: "cityId", as: "movieLocations" });
 MovieLocation.belongsTo(City, { foreignKey: "cityId", as: "city" });
 
+
+export { Country, Department, City, Role, DocumentType, User, Genre, Movie, Showtime, Format };
+export { CinemaComplex };
+export { RoomType };
+export { Room };
+export { SeatType };
+export { Seat };
+export { MovieCast };
+export {SnackCategory, SnackProduct}
+export { UpcomingMovieNotification };
+export { MovieLocation };
 export {
-  CinemaComplex,
-  City,
-  Country,
-  Department,
-  DocumentType,
-  Format,
-  Genre,
-  Movie,
-  MovieCast,
-  MovieLocation,
   Membership,
   MembershipLevel,
-  Role,
-  Room,
-  RoomType,
-  Seat,
-  SeatType,
-  Showtime,
-  UpcomingMovieNotification,
-  User,
   UserConsent,
   UserNotificationPreference,
   EmailVerification,
