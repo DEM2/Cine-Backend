@@ -1,6 +1,7 @@
 import CartSeat from "../../models/reservations/cart-seat.model";
 import { LockSeatsDto } from "../../dto/reservations/lock-seats.dto";
 import { ReleaseSeatsDto } from "../../dto/reservations/release-seats.dto";
+import { SummaryResponseDto } from "../../dto/reservations/summary-response.dto";
 
 /**
  * DTO de respuesta para el mapa de sillas de una función
@@ -50,4 +51,9 @@ export interface IReservationService {
    * Libera un conjunto de sillas previamente bloqueadas por un carrito.
    */
   releaseSeats(dto: ReleaseSeatsDto): Promise<number>;
+
+  /**
+   * Obtiene el resumen de las sillas bloqueadas por un carrito para una función.
+   */
+  getReservationSummary(cartId: number, showtimeId: number): Promise<SummaryResponseDto>;
 }

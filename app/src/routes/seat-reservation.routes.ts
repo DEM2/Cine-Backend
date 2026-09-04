@@ -10,7 +10,7 @@
  */
 
 import { Router } from "express";
-import { lockSeats, releaseSeats } from "../controllers/seats-reservation.controller";
+import { lockSeats, releaseSeats, getReservationSummary } from "../controllers/seats-reservation.controller";
 
 const router = Router();
 
@@ -185,5 +185,78 @@ router.post("/lock-seats", lockSeats);
  *               error: "Error al liberar las sillas"
  */
 router.delete("/release-seats", releaseSeats);
+
+/**
+ * GET /reservations/summary
+ * -------------------------
+ * Obtiene el resumen de las sillas bloqueadas por un carrito para una función.
+ *
+ * Query Params:
+ *  - cartId: Identificador del carrito.
+ *  - showtimeId: Identificador de la función.
+ *
+ * Response:
+ *  - 200 OK: Resumen de la reserva con sillas, función y total.
+ *  - 400 Bad Request: cartId y showtimeId son obligatorios.
+ *  - 404 Not Found: No hay sillas bloqueadas para este carrito/función.
+ *
+ * @swagger
+ * /api/reservations/summary:
+ *   get:
+ *     summary: Obtener resumen de reserva
+ *     tags: [Reservations]
+ *     parameters:
+ *       - in: query
+ *         name: cartId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *       - in: query
+ *         name: showtimeId
+ *         required: true
+ *         schema:
+ *           type: integer
+ *         example: 1
+ *     responses:
+ *       200:
+ *         description: Resumen de la reserva
+ *         content:
+ *           application/json:
+ *             example:
+ *               cartId: 1
+ *               showtime:
+ *                 id: 1
+ *                 movieId: 1
+ *                 roomId: 1
+ *                 startTime: "2026-08-20T18:00:00.000Z"
+ *                 endTime: "2026-08-20T20:00:00.000Z"
+ *                 basePrice: 23000
+ *               seats:
+ *                 - id: 1
+ *                   code: "A-1"
+ *                   rowLabel: "A"
+ *                   seatNumber: 1
+ *                   seatType: "Estándar"
+ *                   price: 23000
+ *               totalSeats: 1
+ *               totalAmount: 23000
+ *               expiresAt: "2026-08-20T15:40:00.000Z"
+ *       400:
+ *         description: Datos inválidos
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "cartId y showtimeId son obligatorios."
+ *       404:
+ *         description: No hay sillas bloqueadas
+ *         content:
+ *           application/json:
+ *             example:
+ *               message: "No hay sillas bloqueadas para este carrito y función."
+ *       500:
+ *         description: Error interno del servidor
+ */
+router.get("/summary", getReservationSummary);
 
 export default router;

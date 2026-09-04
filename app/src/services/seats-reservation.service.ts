@@ -11,6 +11,7 @@ import cartSeatRepository from "../repositories/cart-seat.repository";
 import seatRepository from "../repositories/seat.repository";
 import { LockSeatsDto } from "../dto/reservations/lock-seats.dto";
 import { ReleaseSeatsDto } from "../dto/reservations/release-seats.dto";
+import { SummaryResponseDto } from "../dto/reservations/summary-response.dto";
 import functionService from "./funtion.service";
 import {
   IReservationService,
@@ -193,6 +194,46 @@ class ReservationService implements IReservationService {
     }
 
     return deleted;
+  }
+
+  async getReservationSummary(cartId: number, showtimeId: number): Promise<SummaryResponseDto> {
+    if (!cartId || !showtimeId) {
+      throw new AppError(400, "cartId y showtimeId son obligatorios.");
+    }
+
+    const locks = await cartSeatRepository.findValidByCartAndShowtimeWithDetails(cartId, showtimeId);
+
+    if (!locks || locks.length === 0) {
+      throw new AppError(404, "No hay sillas bloqueadas para este carrito y función.");
+    }
+
+    const showtime = locks[0].showtime;
+    const seats = locks.map((lock: any) => ({
+      id: lock.seat.id,
+      code: lock.seat.code,
+      rowLabel: lock.seat.rowLabel,
+      seatNumber: lock.seat.seatNumber,
+      seatType: lock.seat.seatType?.name ?? "Estándar",
+      price: Number(lock.price),
+    }));
+
+    const totalAmount = seats.reduce((sum, seat) => sum + seat.price, 0);
+
+    return {
+      cartId,
+      showtime: {
+        id: showtime.id,
+        movieId: showtime.movieId,
+        roomId: showtime.roomId,
+        startTime: showtime.startTime,
+        endTime: showtime.endTime,
+        basePrice: Number(showtime.basePrice),
+      },
+      seats,
+      totalSeats: seats.length,
+      totalAmount,
+      expiresAt: locks[0].expiresAt,
+    };
   }
 }
 
