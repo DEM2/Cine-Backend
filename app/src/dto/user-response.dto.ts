@@ -6,11 +6,12 @@ export interface UserResponseDto {
     document_number: string;
     first_name: string;
     last_name: string;
-    birth_date: String;
-    gender: string;
+    birth_date: string;
+    gender?: string;
     phone: string;
     address: string;
     city_id: number;
     role_id: number;
     role: string;
+    status?: string;
 }

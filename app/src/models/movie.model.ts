@@ -34,6 +34,11 @@ export interface MovieAttributes {
   poster: string;
   premiere: boolean;
   audience_rating: number;
+  banner_url?: string | null;
+  trailer_url: string;
+  release_date: Date;
+  is_release: boolean;
+  status: string;
 }
 
 /**
@@ -92,6 +97,11 @@ class Movie
 
   /** Calificación promedio otorgada por el público. */
   public audience_rating!: number;
+  public banner_url!: string | null;
+  public trailer_url!: string;
+  public release_date!: Date;
+  public is_release!: boolean;
+  public status!: string;
 }
 
 /**
@@ -155,6 +165,35 @@ Movie.init(
       type: DataTypes.FLOAT,
       allowNull: false,
       defaultValue: 0,
+    },
+    banner_url: {
+      type: DataTypes.TEXT,
+      allowNull: true,
+      field: "banner_url",
+    },
+    trailer_url: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue : '',
+      field: "trailer_url",
+    },
+    release_date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+      defaultValue : DataTypes.NOW,
+      field: "release_date",
+    },
+    is_release: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: "is_release",
+    },
+    status: {
+      type: DataTypes.STRING(30),
+      allowNull: false,
+      defaultValue: "ACTIVE",
+      field: "status",
     },
   },
   {

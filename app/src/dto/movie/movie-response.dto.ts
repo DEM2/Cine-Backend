@@ -47,4 +47,10 @@ export interface MovieCardDto {
   isPremiere: boolean;
 
   publicRating: number;
+  
+  banner_url?: string;
+  trailer_url?: string;
+  release_date?: string;
+  is_release?: boolean;
+  status?: string;
 }

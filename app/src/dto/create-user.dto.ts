@@ -27,10 +27,11 @@
  * @property {string} first_name - Nombres del usuario.
  * @property {string} last_name - Apellidos del usuario.
  * @property {string} birth_date - Fecha de nacimiento (formato "YYYY-MM-DD").
- * @property {string} gender - Género del usuario.
+ * @property {string} gender - Género del usuario. (opcional)
  * @property {string} phone - Teléfono de contacto del usuario.
  * @property {string} address - Dirección de residencia del usuario.
  * @property {number} city_id - Identificador de la ciudad de residencia (FK -> cities).
+ * 
  *
  * @example
  * const dto: CreateUserDto = {
@@ -54,10 +55,16 @@ export interface CreateUserDto {
      */
     email: string;
 
+    // confirmacion de correo electrónico del usuario.
+    email_confirmation: string;
+
     /**
      * Contraseña del usuario.
      */
     password: string;
+
+    // confirmacion de contraseña del usuario.
+    password_confirmation: string;
 
     /**
      * Identificador del tipo de documento de identidad.
@@ -86,8 +93,9 @@ export interface CreateUserDto {
 
     /**
      * Género del usuario.
+     * ? : opcional
      */
-    gender: string;
+    gender?: string;
 
     /**
      * Teléfono de contacto del usuario.
@@ -104,4 +112,18 @@ export interface CreateUserDto {
      */
     city_id: number;
 
+    // complejo favorito 
+    favorite_complex_id?: number | null;
+
+    // tratamiento de datos del usuario
+    data_processing_consent: boolean;
+
+    // termino y condiciones del usuario
+    terms_and_conditions: boolean;
+
+    // comunicaciones comerciales
+    commercial_communications?: boolean;
+
+    // token generado por Cloudflare Turnstile
+    captchaToken: string;
 }
