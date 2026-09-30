@@ -220,3 +220,26 @@ docker-compose down
 <p align="center">
   Made with by <strong>Riwi Developers</strong> 
 </p>
+
+## Git Workflow and Hooks
+
+Install the repository tooling and application dependencies:
+
+```bash
+npm install
+cd app && npm ci
+```
+
+Create feature branches using the user story number:
+
+```bash
+git switch -c feature/US-123
+```
+
+Before each commit, Husky verifies the branch name and runs ESLint, Jest, and the TypeScript build. Commit subjects must use this format:
+
+```text
+[US-123] feat: add seat reservation
+```
+
+Accepted types are `feat`, `fix`, `docs`, `style`, `refactor`, `test`, `chore`, `ci`, `build`, `perf`, and `revert`. The hooks reject commits outside a `feature/US-<number>` branch or with an invalid commit subject.

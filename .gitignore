@@ -1,179 +1,85 @@
-# Environments
+# Environment files and secrets
 .env
 .env.*
+!.env.example
+*.env
 venv/
 venv.*
 ENV/
 env/
-.env.*.local
+*.pem
+*.key
+*.crt
+/example-jenkins/ssh
 
-# MySQL
+# Database files
 *.mysql
 *.sql
 *.sqlite3
 
 # Logs
+logs
 *.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
 
-# IDEs y editores
+# IDEs and editors
 .vscode/
 .idea/
 *.sublime-workspace
 *.sublime-project
+*.swp
+.eslintcache
 
-# MacOS
+# Operating system files
 .DS_Store
-
-# Windows
 Thumbs.db
 desktop.ini
+Desktop.ini
+ehthumbs.db
 
-# Coverage reports
-.coverage
+# Tests and coverage
 *.cover
-
-# Test and CI folders
+*.coverage
 .tox/
 .nox/
-*.coverage
 nosetests.xml
 coverage.xml
-*.hypothesis/
+.hypothesis/
+coverage/
+.junit/
+reports/
+junit.xml
 
-# AWS, GCP or cloud-specific files
-*.pem
-*.key
-*.crt
-*.env
-
-# Llave privada incluida en la carpeta de ejemplo Jenkins
-/example-jenkins/ssh
-
-
-# Dependencias
-**/node_modules/
+# Dependencies and caches
 node_modules/
 jspm_packages/
+.cache/
+.npm/
+.yarn/
+.pnpm-store/
+.parcel-cache/
+.tmp/
+tmp/
+temp/
 
-# Compilación de TypeScript
+# Build output
 dist/
 build/
 out/
 *.tsbuildinfo
 
-# Archivos de logs
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# Configuración de sistema/IDE
-.DS_Store
-Thumbs.db
-.idea/
-.vscode/
-*.swp
-
-# Cachés
-.cache/
-.npm/
-.yarn/
-.pnpm-store/
-coverage/
-.tmp/
-
-# Docker
+# Docker and PM2
 docker-data/
-*.pid
-
-# Archivos de pruebas
-coverage/
-.junit/
-reports/
-
-# Archivos de sistema
-*.bak
-*.orig
-
-
-# =========================
-# VARIABLES DE ENTORNO
-# =========================
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# =========================
-# LOGS
-# =========================
-logs
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-pnpm-debug.log*
-
-# =========================
-# ARCHIVOS DEL SISTEMA
-# =========================
-.DS_Store
-Thumbs.db
-
-# =========================
-# BUILD / DIST
-# =========================
-dist/
-build/
-
-# =========================
-# CACHE
-# =========================
-.cache/
-.parcel-cache/
-
-# =========================
-# IDE / EDITORES
-# =========================
-.vscode/
-.idea/
-
-# =========================
-# ARCHIVOS TEMPORALES
-# =========================
-tmp/
-temp/
-
-# =========================
-# PM2
-# =========================
 pids/
 *.pid
 *.seed
 *.pid.lock
 
-# =========================
-# SISTEMA OPERATIVO
-# =========================
-ehthumbs.db
-Desktop.ini
-
-# =========================
-# TESTS
-# =========================
-junit.xml
-
-# =========================
-# ARCHIVOS DE RESPALDO
-# =========================
+# Backup files
 *.bak
+*.orig
 *.backup
 *.old
-
-# =========================
-# ARCHIVOS COMPILADOS NODE
-# =========================
-*.tsbuildinfo

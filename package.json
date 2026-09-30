@@ -1,0 +1,17 @@
+{
+  "name": "cine-backend-repository",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "prepare": "husky",
+    "lint": "eslint \"app/src/**/*.ts\"",
+    "test": "npm --prefix app test -- --runInBand",
+    "build": "npm --prefix app run build",
+    "pre-commit": "npm run lint && npm test && npm run build"
+  },
+  "devDependencies": {
+    "eslint": "^9.30.0",
+    "husky": "^9.1.7",
+    "typescript-eslint": "^8.35.0"
+  }
+}

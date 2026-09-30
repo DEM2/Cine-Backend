@@ -1,0 +1,9 @@
+#!/usr/bin/env sh
+
+branch=$(git branch --show-current)
+if ! printf '%s\n' "$branch" | grep -Eq '^feature/US-[0-9]+$'; then
+  printf 'Commit rejected: use a branch named feature/US-123. Current branch: %s\n' "$branch" >&2
+  exit 1
+fi
+
+npm run pre-commit
