@@ -46,6 +46,9 @@ coverage.xml
 *.crt
 *.env
 
+# Llave privada incluida en la carpeta de ejemplo Jenkins
+/example-jenkins/ssh
+
 
 # Dependencias
 **/node_modules/
@@ -94,5 +97,83 @@ reports/
 *.bak
 *.orig
 
-# Package
-package-lock.json
+
+# =========================
+# VARIABLES DE ENTORNO
+# =========================
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# =========================
+# LOGS
+# =========================
+logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# =========================
+# ARCHIVOS DEL SISTEMA
+# =========================
+.DS_Store
+Thumbs.db
+
+# =========================
+# BUILD / DIST
+# =========================
+dist/
+build/
+
+# =========================
+# CACHE
+# =========================
+.cache/
+.parcel-cache/
+
+# =========================
+# IDE / EDITORES
+# =========================
+.vscode/
+.idea/
+
+# =========================
+# ARCHIVOS TEMPORALES
+# =========================
+tmp/
+temp/
+
+# =========================
+# PM2
+# =========================
+pids/
+*.pid
+*.seed
+*.pid.lock
+
+# =========================
+# SISTEMA OPERATIVO
+# =========================
+ehthumbs.db
+Desktop.ini
+
+# =========================
+# TESTS
+# =========================
+junit.xml
+
+# =========================
+# ARCHIVOS DE RESPALDO
+# =========================
+*.bak
+*.backup
+*.old
+
+# =========================
+# ARCHIVOS COMPILADOS NODE
+# =========================
+*.tsbuildinfo
