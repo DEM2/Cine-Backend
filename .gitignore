@@ -46,6 +46,9 @@ coverage.xml
 *.crt
 *.env
 
+# Llave privada incluida en la carpeta de ejemplo Jenkins
+/example-jenkins/ssh
+
 
 # Dependencias
 **/node_modules/
@@ -93,9 +96,6 @@ reports/
 # Archivos de sistema
 *.bak
 *.orig
-
-# Package
-package-lock.json
 
 
 # =========================
