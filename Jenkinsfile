@@ -72,7 +72,7 @@ pipeline {
                                        pm2 save"
                                 '''
                             }
-                        ]
+                        ])
                     }
                 }
             }
