@@ -21,6 +21,55 @@ services:
           memory: ${APP_MEM_LIMIT}
     networks:
       - backend
+  sonarqube:
+    build:
+      context: ./sonarqube
+      dockerfile: Dockerfile
+    container_name: sonarqube
+    restart: unless-stopped
+    env_file:
+      - .env
+    ports:
+      - "${SONARQUBE_PORT}:${SONARQUBE_PORT}"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+    networks:
+      - jenkins-network
+  jenkins:
+
+      build:
+        context: ./jenkins
+        dockerfile: Dockerfile
+      image: ${JENKINS_IMAGE}
+      container_name: jenkins
+      restart: unless-stopped
+      env_file:
+        - .env
+
+      environment:
+        GIT_REPOSITORY: ${GIT_REPOSITORY}
+        GIT_BRANCH: ${GIT_BRANCH}
+        DEPLOY_HOST: ${SSH_HOST}
+        DEPLOY_USER: ${APP_USER}
+        DEPLOY_PATH: ${APP_DEPLOY_PATH}
+        APP_PORT: ${APP_PORT}
+        APP_HEALTH_PATH: ${APP_HEALTH_PATH}
+        SSH_CREDENTIAL_ID: ${SSH_CREDENTIAL_ID}
+        PM2_APP_NAME: ${PM2_APP_NAME}
+
+      ports:
+        - "${JENKINS_HTTP_PORT}:8080"
+        - "${JENKINS_AGENT_PORT}:50000"
+
+      volumes:
+        - jenkins_home:${JENKINS_HOME}
+
+      networks:
+        - jenkins-network
+
+      depends_on:
+        - app
+
 
   db:
     image: postgres:15-alpine
@@ -44,7 +93,17 @@ services:
 
 volumes:
   db_data:
+  jenkins_home:
+  app_data:
+  sonarqube_data:
+
 
 networks:
   backend:
     driver: bridge
+  jenkins-network:
+    driver: bridge
+
+# ==========================================================
+# NETWORK
+# ==========================================================
