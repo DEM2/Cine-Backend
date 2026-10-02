@@ -14,6 +14,7 @@ services:
       - "${SSH_PORT}"
     volumes:
       - app_data:${APP_DEPLOY_PATH}
+      - app_ssh_host_keys:/etc/ssh/host_keys
     env_file:
       - ./.env
     environment:
@@ -102,6 +103,7 @@ volumes:
   db_data:
   jenkins_home:
   app_data:
+  app_ssh_host_keys:
   sonarqube_data:
 
 
