@@ -12,7 +12,7 @@
  */
 
 import { Router } from "express";
-import { createUser, getUsers } from "../controllers/user.controller";
+import { createUser, getUsers, setUserLocation } from "../controllers/user.controller";
 
 const router = Router();
 
