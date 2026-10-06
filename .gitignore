@@ -52,6 +52,8 @@ coverage/
 .junit/
 reports/
 junit.xml
+.scannerwork/
+.sonar/
 
 # Dependencies and caches
 node_modules/

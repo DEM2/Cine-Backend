@@ -39,6 +39,9 @@ services:
     restart: unless-stopped
     env_file:
       - .env
+    environment:
+      SONARQUBE_ADMIN_USERNAME: ${SONARQUBE_ADMIN_USERNAME:-admin}
+      SONARQUBE_ADMIN_PASSWORD: ${SONARQUBE_ADMIN_PASSWORD:-admin}
     ports:
       - "${SONARQUBE_PORT}:${SONARQUBE_PORT}"
     volumes:
