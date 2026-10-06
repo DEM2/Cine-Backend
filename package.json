@@ -5,13 +5,17 @@
   "scripts": {
     "prepare": "husky",
     "lint": "eslint \"app/src/**/*.ts\"",
-    "test": "npm --prefix app test -- --runInBand",
+    "tests": "npm --prefix app test -- --runInBand",
+    "test": "npm run tests",
+    "coverage": "npm --prefix app test -- --coverage --runInBand",
+    "sonar": "npx sonar-scanner -Dproject.settings=sonar-project.properties",
     "build": "npm --prefix app run build",
     "pre-commit": "npm run lint && npm test && npm run build"
   },
   "devDependencies": {
     "eslint": "^9.30.0",
     "husky": "^9.1.7",
+    "sonar-scanner": "^3.1.0",
     "typescript-eslint": "^8.35.0"
   }
 }
