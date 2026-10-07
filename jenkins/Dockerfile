@@ -12,7 +12,8 @@ RUN jenkins-plugin-cli \
     --plugins \
         git \
         workflow-aggregator \
-        ssh-agent
+        ssh-agent \
+        sonar
 
 
 # ============================================================

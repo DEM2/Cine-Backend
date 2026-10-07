@@ -9,6 +9,9 @@ pipeline {
     environment {
         APP_DIR = 'app'
         SSH_PORT = '22'
+        HUSKY = '0'
+        SONAR_SERVER = 'SonarQube'
+        SONAR_SCANNER_TOOL = 'SonarQubeScanner1'
     }
 
     stages {
@@ -18,16 +21,65 @@ pipeline {
             }
         }
 
-        stage('Instalar, probar y compilar') {
+        stage('Install') {
             steps {
-                dir("${APP_DIR}") {
-                    sh '''
-                        set -eu
-                        npm ci
-                        npm test -- --runInBand
-                        npm run build
-                    '''
+                sh '''
+                    set -eu
+                    npm ci --ignore-scripts
+                    npm --prefix "${APP_DIR}" ci
+                '''
+            }
+        }
+
+        stage('Lint') {
+            steps {
+                sh 'npm run lint'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'npm test'
+            }
+        }
+
+        stage('Coverage') {
+            steps {
+                sh 'npm run coverage'
+            }
+        }
+
+        stage('SonarQube') {
+            steps {
+                script {
+                    def scannerHome = tool env.SONAR_SCANNER_TOOL
+
+                    withSonarQubeEnv(env.SONAR_SERVER) {
+                        withEnv(["SCANNER_HOME=${scannerHome}"]) {
+                            sh '''
+                                set -eu
+                                "${SCANNER_HOME}/bin/sonar-scanner" \\
+                                  -Dproject.settings=sonar-project.properties \\
+                                  -Dsonar.host.url="${SONAR_HOST_URL}" \\
+                                  -Dsonar.token="${SONAR_AUTH_TOKEN}"
+                            '''
+                        }
+                    }
                 }
+            }
+        }
+
+        stage('Quality Gate') {
+            steps {
+                timeout(time: 5, unit: 'MINUTES') {
+                    waitForQualityGate abortPipeline: true
+                }
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'npm run build'
             }
         }
 
