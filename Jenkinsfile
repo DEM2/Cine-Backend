@@ -6,6 +6,10 @@ pipeline {
         timestamps()
     }
 
+    triggers {
+        pollSCM('H/5 * * * *')
+    }
+
     environment {
         APP_DIR = 'app'
         SSH_PORT = '22'
