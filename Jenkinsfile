@@ -134,5 +134,30 @@ pipeline {
                 }
             }
         }
+
+        stage('Health Check') {
+            steps {
+                script {
+                    def sshHost = env.DEPLOY_HOST ?: 'app'
+                    def sshUser = env.DEPLOY_USER ?: 'deploy'
+                    def credentialId = env.SSH_CREDENTIAL_ID ?: 'cine-backend-deploy-ssh'
+
+                    sshagent(credentials: [credentialId]) {
+                        withEnv([
+                            "SSH_HOST=${sshHost}",
+                            "SSH_USER=${sshUser}"
+                        ]) {
+                            sh '''
+                                set -eu
+                                SSH_CMD="ssh -p ${SSH_PORT} -o BatchMode=yes -o StrictHostKeyChecking=accept-new"
+
+                                $SSH_CMD "${SSH_USER}@${SSH_HOST}" \
+                                  'set -eu; . /run/cine-backend.env; attempt=0; while [ "$attempt" -lt 30 ]; do if wget -q -O /dev/null "http://127.0.0.1:${APP_PORT}${APP_HEALTH_PATH}"; then echo "Health check passed"; exit 0; fi; attempt=$((attempt + 1)); sleep 2; done; echo "Health check failed" >&2; exit 1'
+                            '''
+                        }
+                    }
+                }
+            }
+        }
     }
 }
