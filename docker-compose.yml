@@ -66,6 +66,7 @@ services:
         APP_PORT: ${APP_PORT}
         APP_HEALTH_PATH: ${APP_HEALTH_PATH}
         SSH_CREDENTIAL_ID: ${SSH_CREDENTIAL_ID}
+        SONAR_NODE_MAXSPACE: ${SONAR_NODE_MAXSPACE}
         PM2_APP_NAME: ${PM2_APP_NAME}
 
       ports:
@@ -77,6 +78,12 @@ services:
 
       networks:
         - jenkins-network
+
+      deploy:
+        resources:
+          limits:
+            cpus: "${JENKINS_CPU_LIMIT}"
+            memory: ${JENKINS_MEM_LIMIT}
 
       depends_on:
         - app
