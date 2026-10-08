@@ -25,7 +25,6 @@ RUN apk add --no-cache openssh-server rsync \
 	   'PubkeyAuthentication yes' \
 	   'HostKey /etc/ssh/host_keys/ssh_host_ed25519_key' \
 	   'AllowUsers deploy' \
-	   'UsePAM no' \
 	   >> /etc/ssh/sshd_config
 
 COPY docker-entrypoint.sh /usr/local/bin/cine-backend-entrypoint
