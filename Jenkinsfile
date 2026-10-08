@@ -65,7 +65,8 @@ pipeline {
                                 "${SCANNER_HOME}/bin/sonar-scanner" \\
                                   -Dproject.settings=sonar-project.properties \\
                                   -Dsonar.host.url="${SONAR_HOST_URL}" \\
-                                  -Dsonar.token="${SONAR_AUTH_TOKEN}"
+                                  -Dsonar.token="${SONAR_AUTH_TOKEN}" \
+                                  -Dsonar.javascript.node.maxspace="${SONAR_NODE_MAXSPACE}"
                             '''
                         }
                     }
