@@ -13,6 +13,7 @@ FROM base AS production
 RUN apk add --no-cache openssh-server rsync \
 	&& npm install --global pm2 \
 	&& adduser -D -h /home/deploy deploy \
+	&& passwd -u deploy \
 	&& mkdir -p /home/deploy/.ssh /opt/cine-backend /run/sshd /etc/ssh/host_keys \
 	&& touch /home/deploy/.ssh/authorized_keys \
 	&& chown -R deploy:deploy /home/deploy /opt/cine-backend \
