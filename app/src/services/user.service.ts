@@ -3,8 +3,10 @@
 import User from "../models/user.model";
 import { CreateUserDto } from "../dto/create-user.dto";
 import { UserResponseDto } from "../dto/user-response.dto";
+import { SetUserLocationDto } from "../dto/set-user-location.dto";
 import repository from "../repositories/user.repository";
 import cityRepository from "../repositories/city.repository";
+import cinemaComplexRepository from "../repositories/cinema.complex.repository";
 import documentTypeRepository from "../repositories/document-type.repository";
 import roleRepository from "../repositories/role.repository";
 import { CinemaComplexRepository } from "../repositories/cinema-complex.repository";
