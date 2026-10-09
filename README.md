@@ -110,6 +110,7 @@ app/src/
 
 Detailed documentation available in `/docs`:
 
+- [DevOps: CI/CD, code quality and deployment](docs/devops.md)
 
 
 <div align=right>
