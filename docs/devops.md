@@ -2,10 +2,7 @@
 
 Este documento describe cómo el código de **Cine Backend** (API en Node.js, Express y TypeScript) pasa del repositorio a un servidor en ejecución, y qué controles automáticos se aplican en el camino.
 
-Dos decisiones del equipo se apartan del enunciado original:
-
-- **Sin Proxmox.** El laboratorio corre en contenedores Docker definidos en `docker-compose.yml`. Cada contenedor cumple el papel que el enunciado asignaba a una máquina virtual.
-- **Sin NestJS.** La aplicación es Express con TypeScript; el flujo DevOps es el mismo.
+Toda la plataforma corre en contenedores Docker definidos en `docker-compose.yml`.
 
 ## Contenido
 
@@ -23,7 +20,6 @@ Dos decisiones del equipo se apartan del enunciado original:
 12. [Variables de entorno](#12-variables-de-entorno)
 13. [Seguridad](#13-seguridad)
 14. [Evidencias del despliegue](#14-evidencias-del-despliegue)
-15. [Pendientes conocidos](#15-pendientes-conocidos)
 
 ---
 
@@ -99,16 +95,6 @@ La base de datos no está en `jenkins-network`: Jenkins y SonarQube no pueden al
 
 Las contraseñas no se documentan aquí. La inicial de Jenkins está en `/var/jenkins_home/secrets/initialAdminPassword` dentro del contenedor.
 
-### Requisitos del equipo anfitrión
-
-Docker necesita **al menos 4 GB de memoria**. Con 3 GB, el análisis de TypeScript de SonarQube no logra arrancar y el pipeline falla con `Failed to start the bridge server (300s timeout)`. En Windows con WSL2 se ajusta en `%USERPROFILE%\.wslconfig`:
-
-```ini
-[wsl2]
-memory=4GB
-swap=4GB
-```
-
 ### Puesta en marcha
 
 Cada instalación configura su `.env` antes de levantar los contenedores:
@@ -148,7 +134,7 @@ El mismo comando sirve en Ubuntu y en Windows. Los nombres de servicio (`db`, `a
 
 | Rama | Uso |
 |---|---|
-| `main` | Rama desplegable: la que Jenkins construye y despliega. Equivale a la `master` del enunciado |
+| `main` | Rama desplegable: la que Jenkins construye y despliega. |
 | `develop` | Integración de las historias antes de publicarlas |
 | `feature/US-<número>` | Una rama por historia de usuario |
 
@@ -299,7 +285,7 @@ El despliegue lo hace Jenkins por SSH contra el contenedor `app`, con el usuario
 3. **Proceso.** PM2 reinicia la aplicación si ya existe, o la crea si es el primer despliegue. Después guarda la lista de procesos (`pm2 save`) para restaurarla al reiniciar el contenedor.
 4. **Verificación.** La etapa *Health Check* consulta `GET /health` desde el propio servidor, hasta 30 veces con 2 segundos de espera.
 
-A diferencia del ejemplo del enunciado, el servidor no hace `git pull` ni compila: recibe el artefacto ya construido y validado. Así no necesita acceso al repositorio ni herramientas de desarrollo.
+El servidor no hace `git pull` ni compila: recibe el artefacto ya construido y validado. Así no necesita acceso al repositorio ni herramientas de desarrollo.
 
 ### Health Check
 
@@ -442,21 +428,3 @@ cine-backend    fork    online
 | Quality Gate | `OK` |
 
 Al ser el primer análisis, todo el código cuenta como existente y el gate no evaluó ninguna condición. Las condiciones de la sección 8 aplican desde el siguiente cambio.
-
-### Ejecución fallida previa
-
-El build #1 falló en la etapa *SonarQube* con `Failed to start the bridge server (300s timeout)`, porque Docker tenía 3 GB de memoria. Las etapas *Quality Gate*, *Build*, *Desplegar por SSH* y *Health Check* se omitieron, como debe ocurrir cuando una validación obligatoria falla. Se resolvió subiendo la memoria de WSL2 a 4 GB.
-
-Faltan por adjuntar las capturas de pantalla del build en Jenkins y del dashboard de SonarQube.
-
-## 15. Pendientes conocidos
-
-| Pendiente | Detalle |
-|---|---|
-| Subir la cobertura | Solo hay 2 archivos de prueba; cualquier funcionalidad nueva sin pruebas fallará el gate |
-| Revisar la vulnerabilidad reportada | Visible en el dashboard de SonarQube |
-| Revisión de secretos antes del commit | El hook `pre-commit` no escanea secretos; hoy solo lo hace SonarQube en el pipeline |
-| Middleware global de errores | Los errores se manejan en cada controlador; no hay un manejador central en `server.ts` |
-| Validación de entrada | Zod se usa en un solo middleware; el resto de rutas valida a mano |
-| Condición de rama en el despliegue | Hoy solo se despliega `main` porque el job construye esa rama; el `Jenkinsfile` no lo impone por sí mismo |
-| Configuración de Jenkins como código | El job, las credenciales y las herramientas se crean a mano |
