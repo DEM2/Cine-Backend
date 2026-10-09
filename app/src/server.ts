@@ -12,16 +12,44 @@ import { swaggerSpec } from "./docs/swagger";
 import cors from "cors";
 import { corsOptions } from "./config/cors";
 import userRoutes from "./routes/user.routes";
+import movieRoutes from "./routes/movie.routes";
+import countryRoutes from "./routes/country.routes";
+import departmentRoutes from "./routes/department.routes";
+import cityRoutes from "./routes/city.routes";
+import authRoutes from './routes/auth.routes';
+import cinemaComplexRoutes from "./routes/cinema.complex.routes";
+import snackRoutes from "./routes/snack.routes";
+
+import functionRoutes from "./routes/function.routes";
+import reservationRoutes from "./routes/seat-reservation.routes";
+import profileRoutes from "./routes/profile.routes";
+import membershipRoutes from "./routes/membership.routes";
 
 
 const app = express();
 app.use(cors(corsOptions));
 
+app.get("/health", (_req, res) => {
+	res.status(200).json({ status: "ok" });
+});
 
 app.use(express.json());
 
 // Rutas
 app.use("/api/users", userRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/movies", movieRoutes);
+app.use("/api/countries", countryRoutes);
+app.use("/api/departments", departmentRoutes);
+app.use("/api/cities", cityRoutes);
+app.use("/api/snacks", snackRoutes)
+app.use('/auth', authRoutes);
+app.use("/api/complex", cinemaComplexRoutes);
+app.use("/api/functions", functionRoutes);
+app.use("/api/reservations", reservationRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/membership", membershipRoutes);
+
 
 // Swagger
 app.use("/api/docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));

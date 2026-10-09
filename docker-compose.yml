@@ -1,17 +1,26 @@
 services:
   app:
-    build: ./app
+    build:
+      context: ./app
+      dockerfile: Dockerfile
+      target: ${APP_BUILD_TARGET:-dev}
+    image: ${APP_IMAGE}
     container_name: ${APP_CONTAINER_NAME}
+    restart: unless-stopped
     working_dir: /usr/src/app
     ports:
       - "${APP_PORT}:${APP_PORT}"
+    expose:
+      - "${SSH_PORT}"
     volumes:
-      - ./app:/usr/src/app
+      - app_data:${APP_DEPLOY_PATH}
+      - app_ssh_host_keys:/etc/ssh/host_keys
     env_file:
       - ./.env
     environment:
-      - NODE_ENV=${NODE_ENV}
-      - DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:${POSTGRES_PORT}/${POSTGRES_DB}
+      NODE_ENV: production
+      APP_PORT: ${APP_PORT}
+      SSH_PUBLIC_KEY: ${SSH_PUBLIC_KEY}
     depends_on:
       - db
     deploy:
@@ -21,6 +30,64 @@ services:
           memory: ${APP_MEM_LIMIT}
     networks:
       - backend
+      - jenkins-network
+  sonarqube:
+    build:
+      context: ./sonarqube
+      dockerfile: Dockerfile
+    container_name: sonarqube
+    restart: unless-stopped
+    env_file:
+      - .env
+    environment:
+      SONARQUBE_ADMIN_USERNAME: ${SONARQUBE_ADMIN_USERNAME:-admin}
+      SONARQUBE_ADMIN_PASSWORD: ${SONARQUBE_ADMIN_PASSWORD:-admin}
+    ports:
+      - "${SONARQUBE_PORT}:${SONARQUBE_PORT}"
+    volumes:
+      - sonarqube_data:/opt/sonarqube/data
+    networks:
+      - jenkins-network
+  jenkins:
+
+      build:
+        context: ./jenkins
+        dockerfile: Dockerfile
+      image: ${JENKINS_IMAGE}
+      container_name: jenkins
+      restart: unless-stopped
+
+      environment:
+        GIT_REPOSITORY: ${GIT_REPOSITORY}
+        GIT_BRANCH: ${GIT_BRANCH}
+        DEPLOY_HOST: ${SSH_HOST}
+        DEPLOY_USER: ${APP_USER}
+        DEPLOY_PATH: ${APP_DEPLOY_PATH}
+        APP_PORT: ${APP_PORT}
+        APP_HEALTH_PATH: ${APP_HEALTH_PATH}
+        SSH_CREDENTIAL_ID: ${SSH_CREDENTIAL_ID}
+        SONAR_NODE_MAXSPACE: ${SONAR_NODE_MAXSPACE}
+        PM2_APP_NAME: ${PM2_APP_NAME}
+
+      ports:
+        - "${JENKINS_HTTP_PORT}:8080"
+        - "${JENKINS_AGENT_PORT}:50000"
+
+      volumes:
+        - jenkins_home:${JENKINS_HOME}
+
+      networks:
+        - jenkins-network
+
+      deploy:
+        resources:
+          limits:
+            cpus: "${JENKINS_CPU_LIMIT}"
+            memory: ${JENKINS_MEM_LIMIT}
+
+      depends_on:
+        - app
+
 
   db:
     image: postgres:15-alpine
@@ -32,8 +99,6 @@ services:
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - POSTGRES_DB=${POSTGRES_DB}
-    ports:
-      - "${POSTGRES_PORT}:${POSTGRES_PORT}"
     volumes:
       - db_data:/var/lib/postgresql/data
     deploy:
@@ -46,7 +111,18 @@ services:
 
 volumes:
   db_data:
+  jenkins_home:
+  app_data:
+  app_ssh_host_keys:
+  sonarqube_data:
+
 
 networks:
   backend:
     driver: bridge
+  jenkins-network:
+    driver: bridge
+
+# ==========================================================
+# NETWORK
+# ==========================================================

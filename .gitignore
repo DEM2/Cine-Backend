@@ -1,64 +1,23 @@
-# Environments
+# Environment files and secrets
 .env
 .env.*
+!.env.example
+*.env
 venv/
 venv.*
 ENV/
 env/
-.env.*.local
+*.pem
+*.key
+*.crt
+/example-jenkins/ssh
 
-# MySQL
+# Database files
 *.mysql
 *.sql
 *.sqlite3
 
 # Logs
-*.log
-
-# IDEs y editores
-.vscode/
-.idea/
-*.sublime-workspace
-*.sublime-project
-
-# MacOS
-.DS_Store
-
-# Windows
-Thumbs.db
-desktop.ini
-
-# Coverage reports
-.coverage
-*.cover
-
-# Test and CI folders
-.tox/
-.nox/
-*.coverage
-nosetests.xml
-coverage.xml
-*.hypothesis/
-
-# AWS, GCP or cloud-specific files
-*.pem
-*.key
-*.crt
-*.env
-
-
-# Dependencias
-**/node_modules/
-node_modules/
-jspm_packages/
-
-# Compilación de TypeScript
-dist/
-build/
-out/
-*.tsbuildinfo
-
-# Archivos de logs
 logs
 *.log
 npm-debug.log*
@@ -66,33 +25,63 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
-# Configuración de sistema/IDE
+# IDEs and editors
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.swp
+.eslintcache
+
+# Operating system files
 .DS_Store
 Thumbs.db
-.idea/
-.vscode/
-*.swp
+desktop.ini
+Desktop.ini
+ehthumbs.db
 
-# Cachés
+# Tests and coverage
+*.cover
+*.coverage
+.tox/
+.nox/
+nosetests.xml
+coverage.xml
+.hypothesis/
+coverage/
+.junit/
+reports/
+junit.xml
+.scannerwork/
+.sonar/
+
+# Dependencies and caches
+node_modules/
+jspm_packages/
 .cache/
 .npm/
 .yarn/
 .pnpm-store/
-coverage/
+.parcel-cache/
 .tmp/
+tmp/
+temp/
 
-# Docker
+# Build output
+dist/
+build/
+out/
+*.tsbuildinfo
+
+# Docker and PM2
 docker-data/
+pids/
 *.pid
+*.seed
+*.pid.lock
 
-# Archivos de pruebas
-coverage/
-.junit/
-reports/
-
-# Archivos de sistema
+# Backup files
 *.bak
 *.orig
-
-# Package
-package-lock.json
+*.backup
+*.old

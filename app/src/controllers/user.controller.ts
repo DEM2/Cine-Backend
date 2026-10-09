@@ -3,7 +3,6 @@ import { Request, Response } from "express";
 import userService from "../services/user.service";
 import { CreateUserDto } from "../dto/create-user.dto";
 import AppError from "../error/appError";
-import authService from "../services/auth.service";
 
 /**
  * ============================================================================
@@ -85,6 +84,8 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
     try {
 
         // Construcción del DTO recibido desde el cliente.
+        // toma todos los datos que llegaron en el body de la peticion  
+        // los guarda en dto
         const dto: CreateUserDto = req.body;
 
         // Delega la lógica de negocio al servicio.
@@ -95,10 +96,17 @@ export const createUser = async (req: Request, res: Response): Promise<Response>
 
     } catch (error: any) {
 
+        // Manejo de errores personalizados de la aplicación.
+        if (error instanceof AppError) {
+            return res.status(error.status).json({
+                message: error.message
+            });
+        }
+    
+        // Manejo de errores inesperados.
         return res.status(500).json({
             error: error.message
         });
-
     }
 
 };
@@ -152,6 +160,13 @@ export const getUsers = async (_req: Request, res: Response): Promise<Response> 
         return res.status(200).json(users);
 
     } catch (error: any) {
+        // Manejo de errores específicos de la aplicación.
+        if (error instanceof AppError) {
+            // Retorna el error con el código de estado y mensaje definidos en AppError.
+            return res.status(error.status).json({
+                message: error.message
+            });
+        }
 
         return res.status(500).json({
             error: error.message
@@ -160,18 +175,3 @@ export const getUsers = async (_req: Request, res: Response): Promise<Response> 
     }
 
 };
-
-export const auth = async (_req: Request, res: Response): Promise<Response> => {
-    try {
-       const {email, password} = _req.body;
-       const user = await authService.login(email, password);
-       return res.status(200).json(user)
-    }catch (error: any){
-        if(error instanceof AppError){
-            return res.status(error.status).json({message:error.message});
-        }
-        return res.status(500).json({
-            error: error.message
-        });
-    }
-}

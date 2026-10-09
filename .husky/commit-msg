@@ -1,0 +1,7 @@
+#!/usr/bin/env sh
+
+message=$(head -n 1 "$1")
+if ! printf '%s\n' "$message" | grep -Eq '^\[US-[0-9]+\] (feat|fix|docs|style|refactor|test|chore|ci|build|perf|revert): .+'; then
+  printf 'Commit rejected: use "[US-123] type: description" (example: "[US-123] feat: add seat reservation").\n' >&2
+  exit 1
+fi
